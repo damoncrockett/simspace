@@ -1,0 +1,57 @@
+:root {
+  --panel-background: #e8e3cd;
+	--panel-stroke: #9f9a86;
+}
+
+rect:hover {
+	fill: rgb(69,149,33);
+}
+
+body {
+	background-color: var(--panel-background);
+}
+
+path, line, text {
+	color: var(--panel-stroke);
+}
+
+.field {
+	float: left;
+	max-width: 2000px;
+}
+
+.panel {
+  right: 40px;
+	bottom: 40px;
+  position: fixed;
+	max-width: 100px;
+	background-color: var(--panel-background);
+	border-radius: 10px;
+	border-color: var(--panel-stroke);
+	border-width: 1px;
+	border-style: solid;
+  text-align: center; /* for centering buttonStrip */
+}
+
+.buttonStrip {
+  display: inline-block;
+  padding-bottom: 10px;
+  padding-top: 10px;
+}
+
+button, button:focus, button:active {
+  font-family: sans-serif;
+  border-color: var(--panel-stroke);
+  border-radius: 5px;
+  padding: 5px;
+  margin-left: 5px;
+  margin-right: 5px;
+  margin-top: 5px;
+  margin-bottom: 5px;
+  outline: none;
+}
+
+button:hover {
+  border-color: hsl(0, 0%, 0%);
+  color: hsl(0, 0%, 0%) !important;
+}

@@ -1,7 +1,6 @@
 import React, { Component } from 'react';
 import Scatter from './Scatter';
 
-
 class App extends Component {
   constructor(props) {
     super(props);
@@ -13,7 +12,6 @@ class App extends Component {
 
     this.handleModel = this.handleModel.bind(this);
   }
-
 
   handleModel() {
     let modelname = this.state.model;

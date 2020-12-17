@@ -44,7 +44,6 @@ class Scatter extends Component {
       .attr('width', 32 )
       .attr('height', 32 )
 
-
     select(svgNode)
       .select('g.plotCanvas')
       .selectAll('image')
@@ -52,9 +51,6 @@ class Scatter extends Component {
       .transition()
         .attr('x', d => d.x * 500 )
         .attr('y', d => d.y * 500 )
-
-
-      //window.scrollTo( 0, this.state.svgH );
     }
 
   render() {

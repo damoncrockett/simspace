@@ -2,18 +2,16 @@ import React, { Component } from 'react';
 import { select } from 'd3-selection';
 
 const margin = {top: 40, right: 40, bottom: 40, left: 40};
+const plotH = 1000;
+const plotW = 1000;
+const svgW = plotW + margin.left + margin.right;
+const svgH = plotH + margin.top + margin.bottom;
 
 class Scatter extends Component {
   constructor(props) {
     super(props);
     this.drawScatter = this.drawScatter.bind(this);
     this.svgNode = React.createRef();
-    this.state = {
-      plotH: 1000,
-      plotW: 1000,
-      svgW: plotW + margin.left + margin.right,
-      svgH: plotH + margin.top + margin.bottom
-    };
   }
 
   componentDidUpdate(prevProps, prevState) {
@@ -52,16 +50,14 @@ class Scatter extends Component {
       .attr('y', d => d.y * 1000 )
       .attr('xlink:href', d => d.imgpath )
 
-      ));
-
       //window.scrollTo( 0, this.state.svgH );
     }
 
   render() {
     return <svg
              ref={this.svgNode}
-             width={this.state.svgW}
-             height={this.state.svgH}
+             width={svgW}
+             height={svgH}
            />;
   }
 }

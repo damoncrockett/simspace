@@ -32,7 +32,7 @@ class App extends Component {
     fetch('http://localhost:8888/'+this.state.model+'.json')
       .then(response => response.json())
       .then(data => this.setState(state => ({
-        data: data)
+        data: data
       })));
   }
 
@@ -43,9 +43,7 @@ class App extends Component {
   componentDidUpdate(prevProps, prevState) {
     // conditional prevents infinite loop from render to cDU
     if (prevState.model !== this.state.model) {
-      this.setState(state => ({
-        data: this.state.data //process w no re-fetch
-      }))
+      this.getData();
     }
   }
 

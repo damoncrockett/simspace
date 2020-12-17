@@ -1,9 +1,10 @@
 import React, { Component } from 'react';
 import { select } from 'd3-selection';
+import { transition } from 'd3-transition';
 
 const margin = {top: 40, right: 40, bottom: 40, left: 40};
-const plotH = 1000;
-const plotW = 1000;
+const plotH = 500;
+const plotW = 500;
 const svgW = plotW + margin.left + margin.right;
 const svgH = plotH + margin.top + margin.bottom;
 
@@ -39,16 +40,19 @@ class Scatter extends Component {
       .data(this.props.data)
       .enter()
       .append('image')
+      .attr('xlink:href', d => d.imgpath )
+      .attr('width', 32 )
+      .attr('height', 32 )
+
 
     select(svgNode)
       .select('g.plotCanvas')
       .selectAll('image')
       .data(this.props.data)
-      .attr('width', 100 )
-      .attr('height', 100 )
-      .attr('x', d => d.x * 1000 )
-      .attr('y', d => d.y * 1000 )
-      .attr('xlink:href', d => d.imgpath )
+      .transition()
+        .attr('x', d => d.x * 500 )
+        .attr('y', d => d.y * 500 )
+
 
       //window.scrollTo( 0, this.state.svgH );
     }

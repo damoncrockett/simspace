@@ -6,23 +6,43 @@ class App extends Component {
     super(props);
 
     this.state = { // global state
-      model: 'umap',
-      data: null
+      pca: true,
+      tsne: false,
+      umap: false,
+      data: null,
+      model: 'pca',
+      tduration: 5000
     };
 
-    this.handleModel = this.handleModel.bind(this);
+    this.handlePCA = this.handlePCA.bind(this);
+    this.handleTSNE = this.handleTSNE.bind(this);
+    this.handleUMAP = this.handleUMAP.bind(this);
   }
 
-  handleModel() {
-    let modelname = this.state.model;
-    if (modelname==='umap') {
-      modelname = 'tsne';
-    } else if (modelname==='tsne') {
-      modelname = 'umap';
-    }
-
+  handlePCA() {
     this.setState(state => ({
-      model: modelname
+      pca: true,
+      tsne: false,
+      umap: false,
+      model: 'pca'
+    }));
+  }
+
+  handleTSNE() {
+    this.setState(state => ({
+      pca: false,
+      tsne: true,
+      umap: false,
+      model: 'tsne'
+    }));
+  }
+
+  handleUMAP() {
+    this.setState(state => ({
+      pca: false,
+      tsne: false,
+      umap: true,
+      model: 'umap'
     }));
   }
 
@@ -49,9 +69,19 @@ class App extends Component {
     const bkgd = '#e8e3cd';
     const stroke = '#9f9a86';
 
-    const modelStyle = {
-      backgroundColor: bkgd,
-      color: stroke,
+    const pcaStyle = {
+      backgroundColor: this.state.pca ? 'white' : bkgd,
+      color: this.state.pca ? 'black' : stroke
+    };
+
+    const tsneStyle = {
+      backgroundColor: this.state.tsne ? 'white' : bkgd,
+      color: this.state.tsne ? 'black' : stroke
+    };
+
+    const umapStyle = {
+      backgroundColor: this.state.umap ? 'white' : bkgd,
+      color: this.state.umap ? 'black' : stroke
     };
 
     return (
@@ -59,11 +89,14 @@ class App extends Component {
         <div className='field'>
           <Scatter
             data={this.state.data}
+            tduration={this.state.tduration}
           />
         </div>
         <div className='panel'>
           <div className='buttonStrip'>
-            <button onClick={this.handleModel} style={modelStyle}>MODEL</button>
+            <button onClick={this.handlePCA} style={pcaStyle}>PCA</button>
+            <button onClick={this.handleTSNE} style={tsneStyle}>t-SNE</button>
+            <button onClick={this.handleUMAP} style={umapStyle}>UMAP</button>
           </div>
         </div>
       </div>

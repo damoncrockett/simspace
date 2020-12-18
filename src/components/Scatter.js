@@ -3,8 +3,8 @@ import { select } from 'd3-selection';
 import { transition } from 'd3-transition';
 
 const margin = {top: 40, right: 40, bottom: 40, left: 40};
-const plotH = 500;
-const plotW = 500;
+const plotH = 600;
+const plotW = 600;
 const svgW = plotW + margin.left + margin.right;
 const svgH = plotH + margin.top + margin.bottom;
 
@@ -24,6 +24,7 @@ class Scatter extends Component {
 
   drawScatter() {
     const svgNode = this.svgNode.current;
+    const transitionSettings = transition().duration(this.props.tduration)
 
     select(svgNode)
       .selectAll('g.plotCanvas')
@@ -41,16 +42,16 @@ class Scatter extends Component {
       .enter()
       .append('image')
       .attr('xlink:href', d => d.imgpath )
-      .attr('width', 32 )
-      .attr('height', 32 )
+      .attr('width', 16 )
+      .attr('height', 16 )
 
     select(svgNode)
       .select('g.plotCanvas')
       .selectAll('image')
       .data(this.props.data)
-      .transition()
-        .attr('x', d => d.x * 500 )
-        .attr('y', d => d.y * 500 )
+      .transition(transitionSettings)
+        .attr('x', d => d.x * 600 )
+        .attr('y', d => d.y * 600 )
     }
 
   render() {

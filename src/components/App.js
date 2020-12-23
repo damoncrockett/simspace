@@ -10,13 +10,18 @@ class App extends Component {
       tsne: false,
       umap: false,
       data: null,
-      model: 'pca',
+      dr: 'pca',
+      sp: true,
+      pasfa: false,
+      model: 'sp',
       tduration: 5000
     };
 
     this.handlePCA = this.handlePCA.bind(this);
     this.handleTSNE = this.handleTSNE.bind(this);
     this.handleUMAP = this.handleUMAP.bind(this);
+    this.handleSP = this.handleSP.bind(this);
+    this.handlePASFA = this.handlePASFA.bind(this);
   }
 
   handlePCA() {
@@ -24,7 +29,7 @@ class App extends Component {
       pca: true,
       tsne: false,
       umap: false,
-      model: 'pca'
+      dr: 'pca'
     }));
   }
 
@@ -33,7 +38,7 @@ class App extends Component {
       pca: false,
       tsne: true,
       umap: false,
-      model: 'tsne'
+      dr: 'tsne'
     }));
   }
 
@@ -42,12 +47,28 @@ class App extends Component {
       pca: false,
       tsne: false,
       umap: true,
-      model: 'umap'
+      dr: 'umap'
+    }));
+  }
+
+  handleSP() {
+    this.setState(state => ({
+      sp: true,
+      pasfa: false,
+      model: 'sp'
+    }));
+  }
+
+  handlePASFA() {
+    this.setState(state => ({
+      sp: false,
+      pasfa: true,
+      model: 'pasfa'
     }));
   }
 
   getData() {
-    fetch('http://localhost:8888/'+this.state.model+'.json')
+    fetch('http://localhost:8888/'+this.state.model+'_'+this.state.dr+'.json')
       .then(response => response.json())
       .then(data => this.setState(state => ({
         data: data
@@ -61,6 +82,10 @@ class App extends Component {
   componentDidUpdate(prevProps, prevState) {
     // conditional prevents infinite loop from render to cDU
     if (prevState.model !== this.state.model) {
+      this.getData();
+    }
+
+    if (prevState.dr !== this.state.dr) {
       this.getData();
     }
   }
@@ -84,6 +109,16 @@ class App extends Component {
       color: this.state.umap ? 'black' : stroke
     };
 
+    const spStyle = {
+      backgroundColor: this.state.sp ? 'white' : bkgd,
+      color: this.state.sp ? 'black' : stroke
+    };
+
+    const pasfaStyle = {
+      backgroundColor: this.state.pasfa ? 'white' : bkgd,
+      color: this.state.pasfa ? 'black' : stroke
+    };
+
     return (
       <div className='app'>
         <div className='field'>
@@ -97,6 +132,8 @@ class App extends Component {
             <button onClick={this.handlePCA} style={pcaStyle}>PCA</button>
             <button onClick={this.handleTSNE} style={tsneStyle}>t-SNE</button>
             <button onClick={this.handleUMAP} style={umapStyle}>UMAP</button>
+            <button onClick={this.handleSP} style={spStyle}>SP</button>
+            <button onClick={this.handlePASFA} style={pasfaStyle}>PASFA</button>
           </div>
         </div>
       </div>

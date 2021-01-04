@@ -11,9 +11,11 @@ class App extends Component {
       umap: false,
       data: null,
       dr: 'pca',
-      sp: true,
+      sp: false,
       pasfa: false,
-      model: 'sp',
+      random1: true,
+      random2: false,
+      model: 'random1',
       tduration: 5000
     };
 
@@ -22,6 +24,8 @@ class App extends Component {
     this.handleUMAP = this.handleUMAP.bind(this);
     this.handleSP = this.handleSP.bind(this);
     this.handlePASFA = this.handlePASFA.bind(this);
+    this.handleRandom1 = this.handleRandom1.bind(this);
+    this.handleRandom2 = this.handleRandom2.bind(this);
   }
 
   handlePCA() {
@@ -55,6 +59,8 @@ class App extends Component {
     this.setState(state => ({
       sp: true,
       pasfa: false,
+      random1: false,
+      random2: false,
       model: 'sp'
     }));
   }
@@ -63,7 +69,29 @@ class App extends Component {
     this.setState(state => ({
       sp: false,
       pasfa: true,
+      random1: false,
+      random2: false,
       model: 'pasfa'
+    }));
+  }
+
+  handleRandom1() {
+    this.setState(state => ({
+      sp: false,
+      pasfa: false,
+      random1: true,
+      random2: false,
+      model: 'random1'
+    }));
+  }
+
+  handleRandom2() {
+    this.setState(state => ({
+      sp: false,
+      pasfa: false,
+      random1: false,
+      random2: true,
+      model: 'random2'
     }));
   }
 
@@ -119,6 +147,16 @@ class App extends Component {
       color: this.state.pasfa ? 'black' : stroke
     };
 
+    const random1Style = {
+      backgroundColor: this.state.random1 ? 'white' : bkgd,
+      color: this.state.random1 ? 'black' : stroke
+    };
+
+    const random2Style = {
+      backgroundColor: this.state.random2 ? 'white' : bkgd,
+      color: this.state.random2 ? 'black' : stroke
+    };
+
     return (
       <div className='app'>
         <div className='field'>
@@ -132,6 +170,8 @@ class App extends Component {
             <button onClick={this.handlePCA} style={pcaStyle}>PCA</button>
             <button onClick={this.handleTSNE} style={tsneStyle}>t-SNE</button>
             <button onClick={this.handleUMAP} style={umapStyle}>UMAP</button>
+            <button onClick={this.handleRandom1} style={random1Style}>RANDOM 1</button>
+            <button onClick={this.handleRandom2} style={random2Style}>RANDOM 2</button>
             <button onClick={this.handleSP} style={spStyle}>SP</button>
             <button onClick={this.handlePASFA} style={pasfaStyle}>PASFA</button>
           </div>

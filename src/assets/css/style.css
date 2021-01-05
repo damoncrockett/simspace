@@ -3,10 +3,6 @@
 	--panel-stroke: #9f9a86;
 }
 
-rect:hover {
-	fill: rgb(69,149,33);
-}
-
 body {
 	background-color: var(--panel-background);
 }
@@ -23,6 +19,19 @@ path, line, text {
 .panel {
   right: 40px;
 	bottom: 40px;
+  position: fixed;
+	max-width: 100px;
+	background-color: var(--panel-background);
+	border-radius: 10px;
+	border-color: var(--panel-stroke);
+	border-width: 1px;
+	border-style: solid;
+  text-align: center; /* for centering buttonStrip */
+}
+
+.upperpanel {
+  right: 40px;
+	top: 40px;
   position: fixed;
 	max-width: 100px;
 	background-color: var(--panel-background);

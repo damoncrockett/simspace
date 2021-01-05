@@ -1,6 +1,14 @@
 import React, { Component } from 'react';
 import Scatter from './Scatter';
 
+const editions = ['1249','1253','1256','1265','1294','1295','1296','1297',
+                  '1298','1299','1300','1301','1313','1324','1327','1331',
+                  '1335','1348','1358','1359','1360','1361','1362','1363',
+                  '1364','1365','1366','1367','1368','1387','1403','2589',
+                  '2591','2592','2594','2595','2596','2597','2598','2599',
+                  '2600','2601','2602','2603','2605','2606','2607','2608',
+                  '2609','2610'];
+
 class App extends Component {
   constructor(props) {
     super(props);
@@ -18,7 +26,9 @@ class App extends Component {
       random3: false,
       random4: false,
       model: 'random1',
-      tduration: 5000
+      tduration: 5000,
+      highlight: false,
+      edition: '1249'
     };
 
     this.handlePCA = this.handlePCA.bind(this);
@@ -30,6 +40,8 @@ class App extends Component {
     this.handleRandom2 = this.handleRandom2.bind(this);
     this.handleRandom3 = this.handleRandom3.bind(this);
     this.handleRandom4 = this.handleRandom4.bind(this);
+    this.handleHighlight = this.handleHighlight.bind(this);
+    this.handleEdition = this.handleEdition.bind(this);
   }
 
   handlePCA() {
@@ -131,6 +143,21 @@ class App extends Component {
     }));
   }
 
+  handleHighlight() {
+    this.setState(state => ({
+      highlight: !this.state.highlight
+    }));
+  }
+
+  handleEdition() {
+    let randomEdition = editions[Math.floor(Math.random()*editions.length)];
+    console.log(randomEdition);
+
+    this.setState(state => ({
+      edition: randomEdition
+    }));
+  }
+
   getData() {
     fetch('http://localhost:8888/'+this.state.model+'_'+this.state.dr+'.json')
       .then(response => response.json())
@@ -203,12 +230,24 @@ class App extends Component {
       color: this.state.random4 ? 'black' : stroke
     };
 
+    const highlightStyle = {
+      backgroundColor: this.state.highlight ? 'white' : bkgd,
+      color: this.state.highlight ? 'black' : stroke
+    };
+
+    const editionStyle = {
+      backgroundColor: bkgd,
+      color: stroke
+    };
+
     return (
       <div className='app'>
         <div className='field'>
           <Scatter
             data={this.state.data}
             tduration={this.state.tduration}
+            highlight={this.state.highlight}
+            edition={this.state.edition}
           />
         </div>
         <div className='panel'>
@@ -222,6 +261,12 @@ class App extends Component {
             <button onClick={this.handleRandom4} style={random4Style}>RANDOM 4</button>
             <button onClick={this.handleSP} style={spStyle}>SP</button>
             <button onClick={this.handlePASFA} style={pasfaStyle}>PASFA</button>
+          </div>
+        </div>
+        <div className='upperpanel'>
+          <div className='buttonStrip'>
+            <button onClick={this.handleHighlight} style={highlightStyle}>HIGHLIGHT</button>
+            <button onClick={this.handleEdition} style={editionStyle}>EDITION</button>
           </div>
         </div>
       </div>

@@ -15,6 +15,8 @@ class App extends Component {
       pasfa: false,
       random1: true,
       random2: false,
+      random3: false,
+      random4: false,
       model: 'random1',
       tduration: 5000
     };
@@ -26,6 +28,8 @@ class App extends Component {
     this.handlePASFA = this.handlePASFA.bind(this);
     this.handleRandom1 = this.handleRandom1.bind(this);
     this.handleRandom2 = this.handleRandom2.bind(this);
+    this.handleRandom3 = this.handleRandom3.bind(this);
+    this.handleRandom4 = this.handleRandom4.bind(this);
   }
 
   handlePCA() {
@@ -61,6 +65,8 @@ class App extends Component {
       pasfa: false,
       random1: false,
       random2: false,
+      random3: false,
+      random4: false,
       model: 'sp'
     }));
   }
@@ -71,6 +77,8 @@ class App extends Component {
       pasfa: true,
       random1: false,
       random2: false,
+      random3: false,
+      random4: false,
       model: 'pasfa'
     }));
   }
@@ -81,6 +89,8 @@ class App extends Component {
       pasfa: false,
       random1: true,
       random2: false,
+      random3: false,
+      random4: false,
       model: 'random1'
     }));
   }
@@ -91,7 +101,33 @@ class App extends Component {
       pasfa: false,
       random1: false,
       random2: true,
+      random3: false,
+      random4: false,
       model: 'random2'
+    }));
+  }
+
+  handleRandom3() {
+    this.setState(state => ({
+      sp: false,
+      pasfa: false,
+      random1: false,
+      random2: false,
+      random3: true,
+      random4: false,
+      model: 'random3'
+    }));
+  }
+
+  handleRandom4() {
+    this.setState(state => ({
+      sp: false,
+      pasfa: false,
+      random1: false,
+      random2: false,
+      random3: false,
+      random4: true,
+      model: 'random4'
     }));
   }
 
@@ -157,6 +193,16 @@ class App extends Component {
       color: this.state.random2 ? 'black' : stroke
     };
 
+    const random3Style = {
+      backgroundColor: this.state.random3 ? 'white' : bkgd,
+      color: this.state.random3 ? 'black' : stroke
+    };
+
+    const random4Style = {
+      backgroundColor: this.state.random4 ? 'white' : bkgd,
+      color: this.state.random4 ? 'black' : stroke
+    };
+
     return (
       <div className='app'>
         <div className='field'>
@@ -172,6 +218,8 @@ class App extends Component {
             <button onClick={this.handleUMAP} style={umapStyle}>UMAP</button>
             <button onClick={this.handleRandom1} style={random1Style}>RANDOM 1</button>
             <button onClick={this.handleRandom2} style={random2Style}>RANDOM 2</button>
+            <button onClick={this.handleRandom3} style={random3Style}>RANDOM 3</button>
+            <button onClick={this.handleRandom4} style={random4Style}>RANDOM 4</button>
             <button onClick={this.handleSP} style={spStyle}>SP</button>
             <button onClick={this.handlePASFA} style={pasfaStyle}>PASFA</button>
           </div>

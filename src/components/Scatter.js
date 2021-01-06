@@ -13,6 +13,8 @@ class Scatter extends Component {
     super(props);
     this.drawScatter = this.drawScatter.bind(this);
     this.drawHighlight = this.drawHighlight.bind(this);
+    this.moveHighlight = this.moveHighlight.bind(this);
+    this.drawEdition = this.drawEdition.bind(this);
     this.svgNode = React.createRef();
   }
 
@@ -20,15 +22,17 @@ class Scatter extends Component {
     // conditional prevents infinite loop
     if (prevProps.data !== this.props.data) {
       this.drawScatter();
-      this.drawHighlight();
+      this.moveHighlight();
     }
 
     if (prevProps.highlight !== this.props.highlight) {
       this.drawHighlight();
+      this.drawEdition();
     }
 
     if (prevProps.edition !== this.props.edition) {
       this.drawHighlight();
+      this.drawEdition();
     }
   }
 
@@ -66,6 +70,38 @@ class Scatter extends Component {
 
   drawHighlight() {
     const svgNode = this.svgNode.current;
+
+    // data is filtered by edition number
+    const highlighted = this.props.data.filter(d => d.edition === this.props.edition);
+
+    // This selection is non-empty only the first time
+    select(svgNode)
+      .select('g.plotCanvas')
+      .selectAll('rect')
+      .data(highlighted)
+      .enter()
+      .append('rect')
+      .attr('width', 16 )
+      .attr('height', 16 )
+
+    select(svgNode)
+      .select('g.plotCanvas')
+      .selectAll('rect')
+      .data(highlighted)
+      .attr('fill', this.props.highlight ? 'rgba(30, 144, 255, 0.5)' : 'rgba(0,0,0,0)')
+      .attr('x', d => d.x * plotW )
+      .attr('y', d => d.y * plotH )
+
+    select(svgNode)
+      .select('g.plotCanvas')
+      .selectAll('rect')
+      .data(highlighted)
+      .exit()
+      .remove()
+    }
+
+  moveHighlight() {
+    const svgNode = this.svgNode.current;
     const transitionSettings = transition().duration(this.props.tduration);
 
     // data is filtered by edition number
@@ -97,6 +133,32 @@ class Scatter extends Component {
       .exit()
       .remove()
     }
+
+  drawEdition() {
+    const svgNode = this.svgNode.current;
+
+    select(svgNode)
+      .select('g.plotCanvas')
+      .selectAll('text')
+      .data([0])
+      .enter()
+      .append('text')
+      .attr('x', plotW - 10 )
+      .attr('y', plotH - 10 )
+
+    select(svgNode)
+      .select('g.plotCanvas')
+      .selectAll('text')
+      .data([0])
+      .text(this.props.edition)
+
+    select(svgNode)
+      .select('g.plotCanvas')
+      .selectAll('text')
+      .data([0])
+      .exit()
+      .remove()
+  }
 
   render() {
     return <svg

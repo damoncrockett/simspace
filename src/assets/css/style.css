@@ -11,6 +11,11 @@ path, line, text {
 	color: var(--panel-stroke);
 }
 
+g {
+  font-family: sans-serif;
+  fill: var(--panel-stroke);
+}
+
 .field {
 	float: left;
 	max-width: 2000px;

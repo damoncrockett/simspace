@@ -3,10 +3,11 @@ import { select } from 'd3-selection';
 import { transition } from 'd3-transition';
 
 const margin = {top: 40, right: 40, bottom: 40, left: 40};
-const plotH = 600;
-const plotW = 600;
+const plotH = 1200;
+const plotW = 1200;
 const svgW = plotW + margin.left + margin.right;
 const svgH = plotH + margin.top + margin.bottom;
+const squareSide = 32;
 
 class Scatter extends Component {
   constructor(props) {
@@ -14,7 +15,9 @@ class Scatter extends Component {
     this.drawScatter = this.drawScatter.bind(this);
     this.drawHighlight = this.drawHighlight.bind(this);
     this.moveHighlight = this.moveHighlight.bind(this);
-    this.drawEdition = this.drawEdition.bind(this);
+    //this.drawEdition = this.drawEdition.bind(this);
+    this.drawInfo = this.drawInfo.bind(this);
+    this.removeInfo = this.removeInfo.bind(this);
     this.svgNode = React.createRef();
   }
 
@@ -27,19 +30,37 @@ class Scatter extends Component {
 
     if (prevProps.highlight !== this.props.highlight) {
       this.drawHighlight();
-      this.drawEdition();
+      //this.drawEdition();
     }
 
     if (prevProps.edition !== this.props.edition) {
       this.drawHighlight();
-      this.drawEdition();
+      //this.drawEdition();
     }
+  }
+
+  drawInfo(infoString) {
+    const svgNode = this.svgNode.current;
+
+    select(svgNode)
+      .select('g.plotCanvas')
+      .append('text')
+      .attr('x', plotW - 50 )
+      .attr('y', plotH - 10 )
+      .attr('id', 't' + infoString)
+      .text(infoString)
+  }
+
+  removeInfo(infoString) {
+      select('#t' + infoString).remove()
   }
 
   drawScatter() {
     const svgNode = this.svgNode.current;
     const transitionSettings = transition().duration(this.props.tduration)
 
+    // Can this be in a separate function? It seems to get used even
+    // by other functions
     select(svgNode)
       .selectAll('g.plotCanvas')
       .data([0]) // bc enter selection, prevents appending new 'g' on re-render
@@ -56,8 +77,10 @@ class Scatter extends Component {
       .enter()
       .append('image')
       .attr('xlink:href', d => d.imgpath )
-      .attr('width', 16 )
-      .attr('height', 16 )
+      .attr('width', squareSide )
+      .attr('height', squareSide )
+      .on('mouseover', this.drawInfo('3456'))
+      .on('mouseout', this.removeInfo('3456'))
 
     select(svgNode)
       .select('g.plotCanvas')
@@ -81,8 +104,8 @@ class Scatter extends Component {
       .data(highlighted)
       .enter()
       .append('rect')
-      .attr('width', 16 )
-      .attr('height', 16 )
+      .attr('width', squareSide )
+      .attr('height', squareSide )
 
     select(svgNode)
       .select('g.plotCanvas')
@@ -114,8 +137,8 @@ class Scatter extends Component {
       .data(highlighted)
       .enter()
       .append('rect')
-      .attr('width', 16 )
-      .attr('height', 16 )
+      .attr('width', squareSide )
+      .attr('height', squareSide )
 
     select(svgNode)
       .select('g.plotCanvas')
@@ -134,6 +157,7 @@ class Scatter extends Component {
       .remove()
     }
 
+/*
   drawEdition() {
     const svgNode = this.svgNode.current;
 
@@ -143,7 +167,7 @@ class Scatter extends Component {
       .data([0])
       .enter()
       .append('text')
-      .attr('x', plotW - 10 )
+      .attr('x', plotW - 40 )
       .attr('y', plotH - 10 )
 
     select(svgNode)
@@ -159,6 +183,7 @@ class Scatter extends Component {
       .exit()
       .remove()
   }
+*/
 
   render() {
     return <svg

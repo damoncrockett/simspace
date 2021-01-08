@@ -4,7 +4,7 @@ import { transition } from 'd3-transition';
 
 const margin = {top: 40, right: 40, bottom: 40, left: 40};
 const plotH = 600;
-const plotW = 600;
+const plotW = 1000;
 const svgW = plotW + margin.left + margin.right;
 const svgH = plotH + margin.top + margin.bottom;
 const squareSide = 16;
@@ -16,8 +16,8 @@ class Scatter extends Component {
     this.drawHighlight = this.drawHighlight.bind(this);
     this.moveHighlight = this.moveHighlight.bind(this);
     //this.drawEdition = this.drawEdition.bind(this);
-    this.drawInfo = this.drawInfo.bind(this);
-    this.removeInfo = this.removeInfo.bind(this);
+    this.handleMouseover = this.handleMouseover.bind(this);
+    this.handleMouseout = this.handleMouseout.bind(this);
     this.svgNode = React.createRef();
   }
 
@@ -60,24 +60,33 @@ class Scatter extends Component {
       .data(this.props.data)
       .enter()
       .append('image')
+      .attr('id', d => 't' + d.fullname + '_textureImage')
       .attr('xlink:href', d => d.imgpath )
       .attr('width', squareSide )
       .attr('height', squareSide )
-      .on('mouseover', this.drawInfo)
-      .on('mouseout', this.removeInfo)
+      .on('mouseover', this.handleMouseover)
+      .on('mouseout', this.handleMouseout)
 
     select(svgNode)
       .select('g.plotCanvas')
       .selectAll('image')
       .data(this.props.data)
       .transition(transitionSettings)
-        .attr('x', d => d.x * plotW )
+        .attr('x', d => d.x * plotH )
         .attr('y', d => d.y * plotH )
     }
 
   // note: 'e' here is the mouse event itself, which we don't need
-  drawInfo(e, d) {
+  handleMouseover(e, d) {
     const svgNode = this.svgNode.current;
+
+    select('#t' + d.fullname + '_textureImage')
+      .attr('width', squareSide * 1.125 )
+      .attr('height', squareSide * 1.125 )
+
+    select('#t' + d.fullname + '_highlight')
+      .attr('width', squareSide * 1.125 )
+      .attr('height', squareSide * 1.125 )
 
     select(svgNode)
       .select('g.plotCanvas')
@@ -86,10 +95,29 @@ class Scatter extends Component {
       .attr('y', plotH * 0.008)
       .attr('id', 't' + d.fullname)
       .text(d.fullname)
+
+    select(svgNode)
+      .select('g.plotCanvas')
+      .append('image')
+      .attr('xlink:href', d.imgpath)
+      .attr('width', 158 )
+      .attr('height', 132 )
+      .attr('x', plotW - plotW * 0.3 )
+      .attr('y', plotH * 0.05)
+      .attr('id', 't' + d.fullname + '_i')
   }
 
-  removeInfo(e, d) {
-      select('#t'+d.fullname).remove()
+  handleMouseout(e, d) {
+      select('#t' + d.fullname + '_textureImage')
+        .attr('width', squareSide )
+        .attr('height', squareSide )
+
+      select('#t' + d.fullname + '_highlight')
+        .attr('width', squareSide )
+        .attr('height', squareSide )
+
+      select('#t' + d.fullname ).remove()
+      select('#t' + d.fullname + '_i').remove()
   }
 
   drawHighlight() {
@@ -105,17 +133,19 @@ class Scatter extends Component {
       .data(highlighted)
       .enter()
       .append('rect')
+      .attr('id', d => 't' + d.fullname + '_highlight')
       .attr('width', squareSide )
       .attr('height', squareSide )
-      .on('mouseover', this.drawInfo)
-      .on('mouseout', this.removeInfo)
+      .on('mouseover', this.handleMouseover)
+      .on('mouseout', this.handleMouseout)
 
     select(svgNode)
       .select('g.plotCanvas')
       .selectAll('rect')
       .data(highlighted)
+      .attr('id', d => 't' + d.fullname + '_highlight')
       .attr('fill', this.props.highlight ? 'rgba(30, 144, 255, 0.5)' : 'rgba(0,0,0,0)')
-      .attr('x', d => d.x * plotW )
+      .attr('x', d => d.x * plotH )
       .attr('y', d => d.y * plotH )
 
     select(svgNode)
@@ -140,18 +170,20 @@ class Scatter extends Component {
       .data(highlighted)
       .enter()
       .append('rect')
+      .attr('id', d => 't' + d.fullname + '_highlight')
       .attr('width', squareSide )
       .attr('height', squareSide )
-      .on('mouseover', this.drawInfo)
-      .on('mouseout', this.removeInfo)
+      .on('mouseover', this.handleMouseover)
+      .on('mouseout', this.handleMouseout)
 
     select(svgNode)
       .select('g.plotCanvas')
       .selectAll('rect')
       .data(highlighted)
+      .attr('id', d => 't' + d.fullname + '_highlight')
       .attr('fill', this.props.highlight ? 'rgba(30, 144, 255, 0.5)' : 'rgba(0,0,0,0)')
       .transition(transitionSettings)
-        .attr('x', d => d.x * plotW )
+        .attr('x', d => d.x * plotH )
         .attr('y', d => d.y * plotH )
 
     select(svgNode)

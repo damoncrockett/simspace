@@ -3,11 +3,11 @@ import { select } from 'd3-selection';
 import { transition } from 'd3-transition';
 
 const margin = {top: 40, right: 40, bottom: 40, left: 40};
-const plotH = 1200;
-const plotW = 1200;
+const plotH = 600;
+const plotW = 600;
 const svgW = plotW + margin.left + margin.right;
 const svgH = plotH + margin.top + margin.bottom;
-const squareSide = 32;
+const squareSide = 16;
 
 class Scatter extends Component {
   constructor(props) {
@@ -39,22 +39,6 @@ class Scatter extends Component {
     }
   }
 
-  drawInfo(infoString) {
-    const svgNode = this.svgNode.current;
-
-    select(svgNode)
-      .select('g.plotCanvas')
-      .append('text')
-      .attr('x', plotW - 50 )
-      .attr('y', plotH - 10 )
-      .attr('id', 't' + infoString)
-      .text(infoString)
-  }
-
-  removeInfo(infoString) {
-      select('#t' + infoString).remove()
-  }
-
   drawScatter() {
     const svgNode = this.svgNode.current;
     const transitionSettings = transition().duration(this.props.tduration)
@@ -79,8 +63,8 @@ class Scatter extends Component {
       .attr('xlink:href', d => d.imgpath )
       .attr('width', squareSide )
       .attr('height', squareSide )
-      .on('mouseover', this.drawInfo('3456'))
-      .on('mouseout', this.removeInfo('3456'))
+      .on('mouseover', this.drawInfo)
+      .on('mouseout', this.removeInfo)
 
     select(svgNode)
       .select('g.plotCanvas')
@@ -90,6 +74,23 @@ class Scatter extends Component {
         .attr('x', d => d.x * plotW )
         .attr('y', d => d.y * plotH )
     }
+
+  // note: 'e' here is the mouse event itself, which we don't need
+  drawInfo(e, d) {
+    const svgNode = this.svgNode.current;
+
+    select(svgNode)
+      .select('g.plotCanvas')
+      .append('text')
+      .attr('x', plotW - plotW * 0.3 )
+      .attr('y', plotH * 0.008)
+      .attr('id', 't' + d.fullname)
+      .text(d.fullname)
+  }
+
+  removeInfo(e, d) {
+      select('#t'+d.fullname).remove()
+  }
 
   drawHighlight() {
     const svgNode = this.svgNode.current;
@@ -106,6 +107,8 @@ class Scatter extends Component {
       .append('rect')
       .attr('width', squareSide )
       .attr('height', squareSide )
+      .on('mouseover', this.drawInfo)
+      .on('mouseout', this.removeInfo)
 
     select(svgNode)
       .select('g.plotCanvas')
@@ -139,6 +142,8 @@ class Scatter extends Component {
       .append('rect')
       .attr('width', squareSide )
       .attr('height', squareSide )
+      .on('mouseover', this.drawInfo)
+      .on('mouseout', this.removeInfo)
 
     select(svgNode)
       .select('g.plotCanvas')

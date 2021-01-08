@@ -15,7 +15,7 @@ class Scatter extends Component {
     this.drawScatter = this.drawScatter.bind(this);
     this.drawHighlight = this.drawHighlight.bind(this);
     this.moveHighlight = this.moveHighlight.bind(this);
-    //this.drawEdition = this.drawEdition.bind(this);
+    this.drawGroup = this.drawGroup.bind(this);
     this.handleMouseover = this.handleMouseover.bind(this);
     this.handleMouseout = this.handleMouseout.bind(this);
     this.svgNode = React.createRef();
@@ -30,12 +30,12 @@ class Scatter extends Component {
 
     if (prevProps.highlight !== this.props.highlight) {
       this.drawHighlight();
-      //this.drawEdition();
+      this.drawGroup();
     }
 
-    if (prevProps.edition !== this.props.edition) {
+    if (prevProps.leaf !== this.props.leaf) {
       this.drawHighlight();
-      //this.drawEdition();
+      this.drawGroup();
     }
   }
 
@@ -123,8 +123,8 @@ class Scatter extends Component {
   drawHighlight() {
     const svgNode = this.svgNode.current;
 
-    // data is filtered by edition number
-    const highlighted = this.props.data.filter(d => d.edition === this.props.edition);
+    //const highlighted = this.props.data.filter(d => d.edition === this.props.edition);
+    const highlighted = this.props.data.filter(d => d.leaf === this.props.leaf);
 
     // This selection is non-empty only the first time
     select(svgNode)
@@ -160,8 +160,8 @@ class Scatter extends Component {
     const svgNode = this.svgNode.current;
     const transitionSettings = transition().duration(this.props.tduration);
 
-    // data is filtered by edition number
-    const highlighted = this.props.data.filter(d => d.edition === this.props.edition);
+    //const highlighted = this.props.data.filter(d => d.edition === this.props.edition);
+    const highlighted = this.props.data.filter(d => d.leaf === this.props.leaf);
 
     // This selection is non-empty only the first time
     select(svgNode)
@@ -194,9 +194,12 @@ class Scatter extends Component {
       .remove()
     }
 
-/*
-  drawEdition() {
+  drawGroup() {
     const svgNode = this.svgNode.current;
+
+    // not sure but this might fail if it were possible to mouse over
+    // and click 'leaf' at the same time
+    // is selectAll really selecting ALL text elements in this div?
 
     select(svgNode)
       .select('g.plotCanvas')
@@ -204,14 +207,14 @@ class Scatter extends Component {
       .data([0])
       .enter()
       .append('text')
-      .attr('x', plotW - 40 )
+      .attr('x', plotW - 100 )
       .attr('y', plotH - 10 )
 
     select(svgNode)
       .select('g.plotCanvas')
       .selectAll('text')
       .data([0])
-      .text(this.props.edition)
+      .text(this.props.leaf)
 
     select(svgNode)
       .select('g.plotCanvas')
@@ -220,7 +223,6 @@ class Scatter extends Component {
       .exit()
       .remove()
   }
-*/
 
   render() {
     return <svg

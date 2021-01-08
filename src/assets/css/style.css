@@ -14,7 +14,7 @@ path, line, text {
 g {
   font-family: sans-serif;
   fill: var(--panel-stroke);
-  font-size: 18px;
+  font-size: 20px;
 }
 
 .field {

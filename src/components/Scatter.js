@@ -3,11 +3,11 @@ import { select } from 'd3-selection';
 import { transition } from 'd3-transition';
 
 const margin = {top: 40, right: 40, bottom: 40, left: 40};
-const plotH = 600;
-const plotW = 1000;
+const plotH = 1200;
+const plotW = 1200;
 const svgW = plotW + margin.left + margin.right;
 const svgH = plotH + margin.top + margin.bottom;
-const squareSide = 16;
+const squareSide = 32;
 
 class Scatter extends Component {
   constructor(props) {
@@ -91,7 +91,7 @@ class Scatter extends Component {
     select(svgNode)
       .select('g.plotCanvas')
       .append('text')
-      .attr('x', plotW - plotW * 0.3 )
+      .attr('x', plotW - plotW * 0.2 )
       .attr('y', plotH * 0.008)
       .attr('id', 't' + d.fullname)
       .text(d.fullname)
@@ -102,7 +102,7 @@ class Scatter extends Component {
       .attr('xlink:href', d.imgpath)
       .attr('width', 158 )
       .attr('height', 132 )
-      .attr('x', plotW - plotW * 0.3 )
+      .attr('x', plotW - plotW * 0.2 )
       .attr('y', plotH * 0.05)
       .attr('id', 't' + d.fullname + '_i')
   }
@@ -207,7 +207,7 @@ class Scatter extends Component {
       .data([0])
       .enter()
       .append('text')
-      .attr('x', plotW - 100 )
+      .attr('x', plotW - plotW * 0.25 )
       .attr('y', plotH - 10 )
 
     select(svgNode)

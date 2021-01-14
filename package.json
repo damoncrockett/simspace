@@ -34,6 +34,7 @@
     "d3-scale": "^3.2.3",
     "d3-selection": "^2.0.0",
     "d3-transition": "^2.0.0",
+    "d3-zoom": "^2.0.0",
     "lodash": "^4.17.20",
     "react": "^17.0.1",
     "react-dom": "^17.0.1"

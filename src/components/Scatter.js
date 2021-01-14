@@ -1,23 +1,26 @@
 import React, { Component } from 'react';
 import { select } from 'd3-selection';
 import { transition } from 'd3-transition';
+import { zoom } from 'd3-zoom';
 
 const margin = {top: 40, right: 40, bottom: 40, left: 40};
-const plotH = 1200;
-const plotW = 1200;
+const plotH = 600;
+const plotW = 600;
 const svgW = plotW + margin.left + margin.right;
 const svgH = plotH + margin.top + margin.bottom;
-const squareSide = 32;
+const squareSide = 15;
 
 class Scatter extends Component {
   constructor(props) {
     super(props);
+
     this.drawScatter = this.drawScatter.bind(this);
     this.drawHighlight = this.drawHighlight.bind(this);
     this.moveHighlight = this.moveHighlight.bind(this);
     this.drawGroup = this.drawGroup.bind(this);
     this.handleMouseover = this.handleMouseover.bind(this);
     this.handleMouseout = this.handleMouseout.bind(this);
+    this.handleZoom = this.handleZoom.bind(this);
     this.svgNode = React.createRef();
   }
 
@@ -39,9 +42,25 @@ class Scatter extends Component {
     }
   }
 
+  handleZoom(e) {
+    const svgNode = this.svgNode.current;
+    const eTransform = e.transform
+    const transform = `translate(${eTransform.x},${eTransform.y}) scale(${eTransform.k})`;
+
+    select(svgNode)
+      .select('g.plotCanvas')
+      .attr('transform', transform)
+  }
+
   drawScatter() {
     const svgNode = this.svgNode.current;
     const transitionSettings = transition().duration(this.props.tduration)
+
+    select(svgNode)
+      .call(zoom()
+      .extent([[0, 0], [plotW, plotH]])
+      .scaleExtent([1, 8])
+      .on("zoom", this.handleZoom));
 
     // Can this be in a separate function? It seems to get used even
     // by other functions
@@ -75,50 +94,6 @@ class Scatter extends Component {
         .attr('x', d => d.x * plotH )
         .attr('y', d => d.y * plotH )
     }
-
-  // note: 'e' here is the mouse event itself, which we don't need
-  handleMouseover(e, d) {
-    const svgNode = this.svgNode.current;
-
-    select('#t' + d.fullname + '_textureImage')
-      .attr('width', squareSide * 1.125 )
-      .attr('height', squareSide * 1.125 )
-
-    select('#t' + d.fullname + '_highlight')
-      .attr('width', squareSide * 1.125 )
-      .attr('height', squareSide * 1.125 )
-
-    select(svgNode)
-      .select('g.plotCanvas')
-      .append('text')
-      .attr('x', plotW - plotW * 0.2 )
-      .attr('y', plotH * 0.008)
-      .attr('id', 't' + d.fullname)
-      .text(d.fullname)
-
-    select(svgNode)
-      .select('g.plotCanvas')
-      .append('image')
-      .attr('xlink:href', d.imgpath)
-      .attr('width', 158 )
-      .attr('height', 132 )
-      .attr('x', plotW - plotW * 0.2 )
-      .attr('y', plotH * 0.05)
-      .attr('id', 't' + d.fullname + '_i')
-  }
-
-  handleMouseout(e, d) {
-      select('#t' + d.fullname + '_textureImage')
-        .attr('width', squareSide )
-        .attr('height', squareSide )
-
-      select('#t' + d.fullname + '_highlight')
-        .attr('width', squareSide )
-        .attr('height', squareSide )
-
-      select('#t' + d.fullname ).remove()
-      select('#t' + d.fullname + '_i').remove()
-  }
 
   drawHighlight() {
     const svgNode = this.svgNode.current;
@@ -194,6 +169,51 @@ class Scatter extends Component {
       .remove()
     }
 
+  // note: 'e' here is the mouse event itself, which we don't need
+  handleMouseover(e, d) {
+    const svgNode = this.svgNode.current;
+
+    select('#t' + d.fullname + '_textureImage')
+      .attr('width', squareSide * 1.125 )
+      .attr('height', squareSide * 1.125 )
+
+    select('#t' + d.fullname + '_highlight')
+      .attr('width', squareSide * 1.125 )
+      .attr('height', squareSide * 1.125 )
+
+    select(svgNode)
+      .select('g.plotCanvas')
+      .append('text')
+      .attr('x', plotW - plotW * 0.2 )
+      .attr('y', plotH * 0.008)
+      .attr('id', 't' + d.fullname)
+      .text(d.fullname)
+
+    select(svgNode)
+      .select('g.plotCanvas')
+      .append('image')
+      .attr('xlink:href', d.imgpath)
+      .attr('width', 158 )
+      .attr('height', 132 )
+      .attr('x', plotW - plotW * 0.2 )
+      .attr('y', plotH * 0.05)
+      .attr('id', 't' + d.fullname + '_i')
+    }
+
+  handleMouseout(e, d) {
+      select('#t' + d.fullname + '_textureImage')
+        .attr('width', squareSide )
+        .attr('height', squareSide )
+
+      select('#t' + d.fullname + '_highlight')
+        .attr('width', squareSide )
+        .attr('height', squareSide )
+
+      select('#t' + d.fullname ).remove()
+      select('#t' + d.fullname + '_i').remove()
+    }
+
+
   drawGroup() {
     const svgNode = this.svgNode.current;
 
@@ -222,7 +242,7 @@ class Scatter extends Component {
       .data([0])
       .exit()
       .remove()
-  }
+    }
 
   render() {
     return <svg

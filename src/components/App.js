@@ -237,8 +237,8 @@ class App extends Component {
   }
 
   render() {
-    const bkgd = '#e8e3cd';
-    const stroke = '#9f9a86';
+    const bkgd = '#212121';
+    const stroke = '#dddddd';
 
     const pcaStyle = {
       backgroundColor: this.state.pca ? 'white' : bkgd,

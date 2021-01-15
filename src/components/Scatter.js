@@ -4,11 +4,11 @@ import { transition } from 'd3-transition';
 import { zoom } from 'd3-zoom';
 
 const margin = {top: 40, right: 40, bottom: 40, left: 40};
-const plotH = 600;
-const plotW = 600;
+const plotH = 1200;
+const plotW = 1200;
 const svgW = plotW + margin.left + margin.right;
 const svgH = plotH + margin.top + margin.bottom;
-const squareSide = 15;
+const squareSide = 30;
 
 class Scatter extends Component {
   constructor(props) {
@@ -22,6 +22,7 @@ class Scatter extends Component {
     this.handleMouseout = this.handleMouseout.bind(this);
     this.handleZoom = this.handleZoom.bind(this);
     this.svgNode = React.createRef();
+    this.svgPanel = React.createRef();
   }
 
   componentDidUpdate(prevProps, prevState) {
@@ -171,7 +172,7 @@ class Scatter extends Component {
 
   // note: 'e' here is the mouse event itself, which we don't need
   handleMouseover(e, d) {
-    const svgNode = this.svgNode.current;
+    const svgPanel = this.svgPanel.current;
 
     select('#t' + d.fullname + '_textureImage')
       .attr('width', squareSide * 1.125 )
@@ -181,22 +182,30 @@ class Scatter extends Component {
       .attr('width', squareSide * 1.125 )
       .attr('height', squareSide * 1.125 )
 
-    select(svgNode)
-      .select('g.plotCanvas')
+    select(svgPanel)
+      .selectAll('g.panelCanvas')
+      .data([0]) // bc enter selection, prevents appending new 'g' on re-render
+      .enter()
+      .append('g')
+      .attr('class', 'panelCanvas') // purely semantic
+      .attr('transform', `translate(${margin.left},${margin.top})`);
+
+    select(svgPanel)
+      .select('g.panelCanvas')
       .append('text')
-      .attr('x', plotW - plotW * 0.2 )
-      .attr('y', plotH * 0.008)
+      .attr('x', 0 )
+      .attr('y', 0)
       .attr('id', 't' + d.fullname)
       .text(d.fullname)
 
-    select(svgNode)
-      .select('g.plotCanvas')
+    select(svgPanel)
+      .select('g.panelCanvas')
       .append('image')
       .attr('xlink:href', d.imgpath)
       .attr('width', 158 )
       .attr('height', 132 )
-      .attr('x', plotW - plotW * 0.2 )
-      .attr('y', plotH * 0.05)
+      .attr('x', 0 )
+      .attr('y', 40)
       .attr('id', 't' + d.fullname + '_i')
     }
 
@@ -213,31 +222,30 @@ class Scatter extends Component {
       select('#t' + d.fullname + '_i').remove()
     }
 
-
   drawGroup() {
-    const svgNode = this.svgNode.current;
+    const svgPanel = this.svgPanel.current;
 
     // not sure but this might fail if it were possible to mouse over
     // and click 'leaf' at the same time
     // is selectAll really selecting ALL text elements in this div?
 
-    select(svgNode)
-      .select('g.plotCanvas')
+    select(svgPanel)
+      .select('g.panelCanvas')
       .selectAll('text')
       .data([0])
       .enter()
       .append('text')
-      .attr('x', plotW - plotW * 0.25 )
-      .attr('y', plotH - 10 )
+      .attr('x', 0 )
+      .attr('y', 200 )
 
-    select(svgNode)
-      .select('g.plotCanvas')
+    select(svgPanel)
+      .select('g.panelCanvas')
       .selectAll('text')
       .data([0])
       .text(this.props.leaf)
 
-    select(svgNode)
-      .select('g.plotCanvas')
+    select(svgPanel)
+      .select('g.panelCanvas')
       .selectAll('text')
       .data([0])
       .exit()
@@ -245,11 +253,24 @@ class Scatter extends Component {
     }
 
   render() {
-    return <svg
-             ref={this.svgNode}
-             width={svgW}
-             height={svgH}
-           />;
+    return (
+      <div>
+        <div className='fieldPlot'>
+          <svg
+          ref={this.svgNode}
+          width={svgW}
+          height={svgH}
+          />
+        </div>
+        <div className='fieldPanel'>
+          <svg
+          ref={this.svgPanel}
+          width={svgW}
+          height={svgH / 4}
+          />
+        </div>
+      </div>
+    );
   }
 }
 

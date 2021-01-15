@@ -20,6 +20,26 @@ g {
 .field {
 	float: left;
 	max-width: 2000px;
+  border-radius: 10px;
+	border-color: var(--panel-stroke);
+	border-width: 1px;
+	border-style: solid;
+}
+
+.fieldPlot {
+	float: left;
+	max-width: 2000px;
+}
+
+.fieldPanel {
+  right: 160px;
+	top: 40px;
+  position: fixed;
+  max-width: 400px;
+  border-radius: 10px;
+	border-color: var(--panel-stroke);
+	border-width: 1px;
+	border-style: solid;
 }
 
 .panel {

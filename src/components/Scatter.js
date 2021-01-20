@@ -9,14 +9,23 @@ const plotW = 1200;
 const svgW = plotW + margin.left + margin.right;
 const svgH = plotH + margin.top + margin.bottom;
 const squareSide = 30;
+const clusterColors = {
+  0: 'rgba(69,222,178,0.5)',
+  1: 'rgba(249,13,160,0.5)',
+  2: 'rgba(171,213,51,0.5)',
+  3: 'rgba(189,108,243,0.5)'
+}
 
 class Scatter extends Component {
   constructor(props) {
     super(props);
 
+    this.drawSVG = this.drawSVG.bind(this);
     this.drawScatter = this.drawScatter.bind(this);
     this.drawHighlight = this.drawHighlight.bind(this);
     this.moveHighlight = this.moveHighlight.bind(this);
+    this.drawCluster = this.drawCluster.bind(this);
+    this.moveCluster = this.moveCluster.bind(this);
     this.drawGroup = this.drawGroup.bind(this);
     this.handleMouseover = this.handleMouseover.bind(this);
     this.handleMouseout = this.handleMouseout.bind(this);
@@ -25,16 +34,25 @@ class Scatter extends Component {
     this.svgPanel = React.createRef();
   }
 
+  componentDidMount() {
+    this.drawSVG();
+  }
+
   componentDidUpdate(prevProps, prevState) {
     // conditional prevents infinite loop
     if (prevProps.data !== this.props.data) {
       this.drawScatter();
       this.moveHighlight();
+      this.moveCluster();
     }
 
     if (prevProps.highlight !== this.props.highlight) {
       this.drawHighlight();
       this.drawGroup();
+    }
+
+    if (prevProps.cluster !== this.props.cluster) {
+      this.drawCluster();
     }
 
     if (prevProps.leaf !== this.props.leaf) {
@@ -53,18 +71,16 @@ class Scatter extends Component {
       .attr('transform', transform)
   }
 
-  drawScatter() {
+  drawSVG() {
     const svgNode = this.svgNode.current;
-    const transitionSettings = transition().duration(this.props.tduration)
+    const svgPanel = this.svgPanel.current;
 
     select(svgNode)
       .call(zoom()
       .extent([[0, 0], [plotW, plotH]])
-      .scaleExtent([1, 8])
+      .scaleExtent([0.25, 5])
       .on("zoom", this.handleZoom));
 
-    // Can this be in a separate function? It seems to get used even
-    // by other functions
     select(svgNode)
       .selectAll('g.plotCanvas')
       .data([0]) // bc enter selection, prevents appending new 'g' on re-render
@@ -72,6 +88,19 @@ class Scatter extends Component {
       .append('g')
       .attr('class', 'plotCanvas') // purely semantic
       .attr('transform', `translate(${margin.left},${margin.top})`);
+
+    select(svgPanel)
+      .selectAll('g.panelCanvas')
+      .data([0]) // bc enter selection, prevents appending new 'g' on re-render
+      .enter()
+      .append('g')
+      .attr('class', 'panelCanvas') // purely semantic
+      .attr('transform', `translate(${margin.left},${margin.top})`);
+  }
+
+  drawScatter() {
+    const svgNode = this.svgNode.current;
+    const transitionSettings = transition().duration(this.props.tduration)
 
     // This selection is non-empty only the first time
     select(svgNode)
@@ -105,10 +134,11 @@ class Scatter extends Component {
     // This selection is non-empty only the first time
     select(svgNode)
       .select('g.plotCanvas')
-      .selectAll('rect')
+      .selectAll('rect.highlight')
       .data(highlighted)
       .enter()
       .append('rect')
+      .attr('class', 'highlight')
       .attr('id', d => 't' + d.fullname + '_highlight')
       .attr('width', squareSide )
       .attr('height', squareSide )
@@ -117,16 +147,15 @@ class Scatter extends Component {
 
     select(svgNode)
       .select('g.plotCanvas')
-      .selectAll('rect')
+      .selectAll('rect.highlight')
       .data(highlighted)
-      .attr('id', d => 't' + d.fullname + '_highlight')
-      .attr('fill', this.props.highlight ? 'rgba(30, 144, 255, 0.5)' : 'rgba(0,0,0,0)')
       .attr('x', d => d.x * plotH )
       .attr('y', d => d.y * plotH )
+      .attr('fill', this.props.highlight ? 'rgba(255, 128, 0, 0.5)' : 'rgba(0,0,0,0)')
 
     select(svgNode)
       .select('g.plotCanvas')
-      .selectAll('rect')
+      .selectAll('rect.highlight')
       .data(highlighted)
       .exit()
       .remove()
@@ -139,14 +168,34 @@ class Scatter extends Component {
     //const highlighted = this.props.data.filter(d => d.edition === this.props.edition);
     const highlighted = this.props.data.filter(d => d.leaf === this.props.leaf);
 
+    select(svgNode)
+      .select('g.plotCanvas')
+      .selectAll('rect.highlight')
+      .data(highlighted)
+      .transition(transitionSettings)
+        .attr('x', d => d.x * plotH )
+        .attr('y', d => d.y * plotH )
+
+    select(svgNode)
+      .select('g.plotCanvas')
+      .selectAll('rect.highlight')
+      .data(highlighted)
+      .exit()
+      .remove()
+    }
+
+  drawCluster() {
+    const svgNode = this.svgNode.current;
+
     // This selection is non-empty only the first time
     select(svgNode)
       .select('g.plotCanvas')
-      .selectAll('rect')
-      .data(highlighted)
+      .selectAll('rect.cluster')
+      .data(this.props.data)
       .enter()
       .append('rect')
-      .attr('id', d => 't' + d.fullname + '_highlight')
+      .attr('class','cluster')
+      .attr('id', d => 't' + d.fullname + '_cluster')
       .attr('width', squareSide )
       .attr('height', squareSide )
       .on('mouseover', this.handleMouseover)
@@ -154,18 +203,36 @@ class Scatter extends Component {
 
     select(svgNode)
       .select('g.plotCanvas')
-      .selectAll('rect')
-      .data(highlighted)
-      .attr('id', d => 't' + d.fullname + '_highlight')
-      .attr('fill', this.props.highlight ? 'rgba(30, 144, 255, 0.5)' : 'rgba(0,0,0,0)')
+      .selectAll('rect.cluster')
+      .data(this.props.data)
+      .attr('x', d => d.x * plotH )
+      .attr('y', d => d.y * plotH )
+      .attr('fill', this.props.cluster ? d => clusterColors[d.clusterNum] : 'rgba(0,0,0,0)')
+
+    select(svgNode)
+      .select('g.plotCanvas')
+      .selectAll('rect.cluster')
+      .data(this.props.data)
+      .exit()
+      .remove()
+    }
+
+  moveCluster() {
+    const svgNode = this.svgNode.current;
+    const transitionSettings = transition().duration(this.props.tduration);
+
+    select(svgNode)
+      .select('g.plotCanvas')
+      .selectAll('rect.cluster')
+      .data(this.props.data)
       .transition(transitionSettings)
         .attr('x', d => d.x * plotH )
         .attr('y', d => d.y * plotH )
 
     select(svgNode)
       .select('g.plotCanvas')
-      .selectAll('rect')
-      .data(highlighted)
+      .selectAll('rect.cluster')
+      .data(this.props.data)
       .exit()
       .remove()
     }
@@ -182,13 +249,9 @@ class Scatter extends Component {
       .attr('width', squareSide * 1.125 )
       .attr('height', squareSide * 1.125 )
 
-    select(svgPanel)
-      .selectAll('g.panelCanvas')
-      .data([0]) // bc enter selection, prevents appending new 'g' on re-render
-      .enter()
-      .append('g')
-      .attr('class', 'panelCanvas') // purely semantic
-      .attr('transform', `translate(${margin.left},${margin.top})`);
+    select('#t' + d.fullname + '_cluster')
+      .attr('width', squareSide * 1.125 )
+      .attr('height', squareSide * 1.125 )
 
     select(svgPanel)
       .select('g.panelCanvas')
@@ -218,6 +281,10 @@ class Scatter extends Component {
         .attr('width', squareSide )
         .attr('height', squareSide )
 
+      select('#t' + d.fullname + '_cluster')
+        .attr('width', squareSide )
+        .attr('height', squareSide )
+
       select('#t' + d.fullname ).remove()
       select('#t' + d.fullname + '_i').remove()
     }
@@ -228,6 +295,7 @@ class Scatter extends Component {
     // not sure but this might fail if it were possible to mouse over
     // and click 'leaf' at the same time
     // is selectAll really selecting ALL text elements in this div?
+    // I think it must be
 
     select(svgPanel)
       .select('g.panelCanvas')

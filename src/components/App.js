@@ -72,6 +72,7 @@ class App extends Component {
       model: 'sp',
       tduration: 5000,
       highlight: false,
+      cluster: false,
       edition: '1249',
       leaf: '1249_4'
     };
@@ -86,6 +87,7 @@ class App extends Component {
     this.handleRandom3 = this.handleRandom3.bind(this);
     this.handleRandom4 = this.handleRandom4.bind(this);
     this.handleHighlight = this.handleHighlight.bind(this);
+    this.handleCluster = this.handleCluster.bind(this);
     this.handleEdition = this.handleEdition.bind(this);
     this.handleLeaf = this.handleLeaf.bind(this);
   }
@@ -195,6 +197,12 @@ class App extends Component {
     }));
   }
 
+  handleCluster() {
+    this.setState(state => ({
+      cluster: !this.state.cluster
+    }));
+  }
+
   handleEdition() {
     let randomEdition = editions[Math.floor(Math.random()*editions.length)];
     console.log(randomEdition);
@@ -290,6 +298,11 @@ class App extends Component {
       color: this.state.highlight ? 'black' : stroke
     };
 
+    const clusterStyle = {
+      backgroundColor: this.state.cluster ? 'white' : bkgd,
+      color: this.state.cluster ? 'black' : stroke
+    };
+
     const editionStyle = {
       backgroundColor: bkgd,
       color: stroke
@@ -307,6 +320,7 @@ class App extends Component {
             data={this.state.data}
             tduration={this.state.tduration}
             highlight={this.state.highlight}
+            cluster={this.state.cluster}
             edition={this.state.edition}
             leaf={this.state.leaf}
           />
@@ -327,6 +341,7 @@ class App extends Component {
         <div className='upperpanel'>
           <div className='buttonStrip'>
             <button onClick={this.handleHighlight} style={highlightStyle}>HIGHLIGHT</button>
+            <button onClick={this.handleCluster} style={clusterStyle}>CLUSTER</button>
             <button onClick={this.handleEdition} style={editionStyle}>EDITION</button>
             <button onClick={this.handleLeaf} style={leafStyle}>LEAF</button>
           </div>

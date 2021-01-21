@@ -74,7 +74,10 @@ class App extends Component {
       highlight: false,
       cluster: false,
       edition: '1249',
-      leaf: '1249_4'
+      leaf: '1249_4',
+      unitzoom: true,
+      canvaszoom: false,
+      zoom: 'unit'
     };
 
     this.handlePCA = this.handlePCA.bind(this);
@@ -90,6 +93,24 @@ class App extends Component {
     this.handleCluster = this.handleCluster.bind(this);
     this.handleEdition = this.handleEdition.bind(this);
     this.handleLeaf = this.handleLeaf.bind(this);
+    this.handleUnitZoom = this.handleUnitZoom.bind(this);
+    this.handleCanvasZoom = this.handleCanvasZoom.bind(this);
+  }
+
+  handleUnitZoom() {
+    this.setState(state => ({
+      unitzoom: true,
+      canvaszoom: false,
+      zoom: 'unit'
+    }));
+  }
+
+  handleCanvasZoom() {
+    this.setState(state => ({
+      unitzoom: false,
+      canvaszoom: true,
+      zoom: 'canvas'
+    }));
   }
 
   handlePCA() {
@@ -248,6 +269,16 @@ class App extends Component {
     const bkgd = '#212121';
     const stroke = '#dddddd';
 
+    const unitZoomStyle = {
+      backgroundColor: this.state.unitzoom ? 'white' : bkgd,
+      color: this.state.unitzoom ? 'black' : stroke
+    };
+
+    const canvasZoomStyle = {
+      backgroundColor: this.state.canvaszoom ? 'white' : bkgd,
+      color: this.state.canvaszoom ? 'black' : stroke
+    };
+
     const pcaStyle = {
       backgroundColor: this.state.pca ? 'white' : bkgd,
       color: this.state.pca ? 'black' : stroke
@@ -323,7 +354,22 @@ class App extends Component {
             cluster={this.state.cluster}
             edition={this.state.edition}
             leaf={this.state.leaf}
+            zoom={this.state.zoom}
           />
+        </div>
+        <div className='upperpanel'>
+          <div className='buttonStrip'>
+            <button onClick={this.handleHighlight} style={highlightStyle}>HIGHLIGHT</button>
+            <button onClick={this.handleCluster} style={clusterStyle}>CLUSTER</button>
+            <button onClick={this.handleEdition} style={editionStyle}>EDITION</button>
+            <button onClick={this.handleLeaf} style={leafStyle}>LEAF</button>
+          </div>
+        </div>
+        <div className='midpanel'>
+          <div className='buttonStrip'>
+            <button onClick={this.handleUnitZoom} style={unitZoomStyle}>UNIT ZOOM</button>
+            <button onClick={this.handleCanvasZoom} style={canvasZoomStyle}>CANVAS ZOOM</button>
+          </div>
         </div>
         <div className='panel'>
           <div className='buttonStrip'>
@@ -338,14 +384,7 @@ class App extends Component {
             <button onClick={this.handlePASFA} style={pasfaStyle}>PASFA</button>
           </div>
         </div>
-        <div className='upperpanel'>
-          <div className='buttonStrip'>
-            <button onClick={this.handleHighlight} style={highlightStyle}>HIGHLIGHT</button>
-            <button onClick={this.handleCluster} style={clusterStyle}>CLUSTER</button>
-            <button onClick={this.handleEdition} style={editionStyle}>EDITION</button>
-            <button onClick={this.handleLeaf} style={leafStyle}>LEAF</button>
-          </div>
-        </div>
+
       </div>
     );
   }

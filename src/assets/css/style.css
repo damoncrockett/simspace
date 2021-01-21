@@ -68,6 +68,19 @@ g {
   text-align: center; /* for centering buttonStrip */
 }
 
+.midpanel {
+  right: 40px;
+	top: 225px;
+  position: fixed;
+	max-width: 100px;
+	background-color: var(--panel-background);
+	border-radius: 10px;
+	border-color: var(--panel-stroke);
+	border-width: 1px;
+	border-style: solid;
+  text-align: center; /* for centering buttonStrip */
+}
+
 .buttonStrip {
   display: inline-block;
   padding-bottom: 10px;

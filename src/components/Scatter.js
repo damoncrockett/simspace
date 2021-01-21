@@ -2,19 +2,21 @@ import React, { Component } from 'react';
 import { select } from 'd3-selection';
 import { transition } from 'd3-transition';
 import { zoom } from 'd3-zoom';
+import { scaleLinear } from 'd3-scale';
 
 const margin = {top: 40, right: 40, bottom: 40, left: 40};
-const plotH = 1200;
-const plotW = 1200;
+const plotH = 600;
+const plotW = 600;
 const svgW = plotW + margin.left + margin.right;
 const svgH = plotH + margin.top + margin.bottom;
-const squareSide = 30;
+const squareSide = 15;
+
 const clusterColors = {
   0: 'rgba(69,222,178,0.5)',
   1: 'rgba(249,13,160,0.5)',
   2: 'rgba(171,213,51,0.5)',
   3: 'rgba(189,108,243,0.5)'
-}
+};
 
 class Scatter extends Component {
   constructor(props) {
@@ -22,10 +24,13 @@ class Scatter extends Component {
 
     this.drawSVG = this.drawSVG.bind(this);
     this.drawScatter = this.drawScatter.bind(this);
+    this.moveScatter = this.moveScatter.bind(this);
     this.drawHighlight = this.drawHighlight.bind(this);
     this.moveHighlight = this.moveHighlight.bind(this);
+    this.highlightFill = this.highlightFill.bind(this);
     this.drawCluster = this.drawCluster.bind(this);
     this.moveCluster = this.moveCluster.bind(this);
+    this.clusterFill = this.clusterFill.bind(this);
     this.drawGroup = this.drawGroup.bind(this);
     this.handleMouseover = this.handleMouseover.bind(this);
     this.handleMouseout = this.handleMouseout.bind(this);
@@ -40,19 +45,25 @@ class Scatter extends Component {
 
   componentDidUpdate(prevProps, prevState) {
     // conditional prevents infinite loop
-    if (prevProps.data !== this.props.data) {
+    if (prevProps.data === null) {
+      // after initial change from null, we draw all the datavis
       this.drawScatter();
+      this.drawCluster();
+      this.drawHighlight();
+      this.drawGroup();
+    } else if (prevProps.data !== null && prevProps.data !== this.props.data) {
+      // every data change moves visible plot elements
+      this.moveScatter();
       this.moveHighlight();
       this.moveCluster();
     }
 
     if (prevProps.highlight !== this.props.highlight) {
-      this.drawHighlight();
-      this.drawGroup();
+      this.highlightFill();
     }
 
     if (prevProps.cluster !== this.props.cluster) {
-      this.drawCluster();
+      this.clusterFill();
     }
 
     if (prevProps.leaf !== this.props.leaf) {
@@ -63,23 +74,59 @@ class Scatter extends Component {
 
   handleZoom(e) {
     const svgNode = this.svgNode.current;
-    const eTransform = e.transform
-    const transform = `translate(${eTransform.x},${eTransform.y}) scale(${eTransform.k})`;
+    const zoomTransform = e.transform;
 
-    select(svgNode)
-      .select('g.plotCanvas')
-      .attr('transform', transform)
+    if (this.props.zoom === 'unit') {
+
+      // Not sure why g.plotCanvas is the selection, since d3.zoom
+      // is called on the just the svgNode. But it only works like this
+      select(svgNode)
+        .select('g.plotCanvas')
+        .attr('transform', `translate(${zoomTransform.x},${zoomTransform.y}) scale(${zoomTransform.k})`)
+
+    } else if (this.props.zoom === 'canvas') {
+
+      const xScale = scaleLinear()
+                    .domain([0, 1])
+                    .range([0, plotW]);
+      const yScale = scaleLinear()
+                    .domain([0, 1])
+                    .range([0, plotH]);
+
+      this.updatedxScale = zoomTransform.rescaleX(xScale);
+      this.updatedyScale = zoomTransform.rescaleY(yScale);
+
+      // needed for moving the correct highlights
+      const highlighted = this.props.data.filter(d => d.leaf === this.props.leaf);
+
+      // rescale x and y domains (above) then apply to all visible elements below
+      select(svgNode)
+        .select('g.plotCanvas')
+        .selectAll('image')
+        .data(this.props.data)
+        .attr('x', d => this.updatedxScale(d.x) )
+        .attr('y', d => this.updatedyScale(d.y) )
+
+      select(svgNode)
+        .select('g.plotCanvas')
+        .selectAll('rect.highlight')
+        .data(highlighted)
+        .attr('x', d => this.updatedxScale(d.x) )
+        .attr('y', d => this.updatedyScale(d.y) )
+
+      select(svgNode)
+        .select('g.plotCanvas')
+        .selectAll('rect.cluster')
+        .data(this.props.data)
+        .attr('x', d => this.updatedxScale(d.x) )
+        .attr('y', d => this.updatedyScale(d.y) )
+
+    }
   }
 
   drawSVG() {
     const svgNode = this.svgNode.current;
     const svgPanel = this.svgPanel.current;
-
-    select(svgNode)
-      .call(zoom()
-      .extent([[0, 0], [plotW, plotH]])
-      .scaleExtent([0.25, 5])
-      .on("zoom", this.handleZoom));
 
     select(svgNode)
       .selectAll('g.plotCanvas')
@@ -96,11 +143,16 @@ class Scatter extends Component {
       .append('g')
       .attr('class', 'panelCanvas') // purely semantic
       .attr('transform', `translate(${margin.left},${margin.top})`);
+
+    select(svgNode)
+      .call(zoom()
+      .extent([[0, 0], [plotW, plotH]])
+      .scaleExtent([0.25, 5])
+      .on("zoom", this.handleZoom));
   }
 
   drawScatter() {
     const svgNode = this.svgNode.current;
-    const transitionSettings = transition().duration(this.props.tduration)
 
     // This selection is non-empty only the first time
     select(svgNode)
@@ -113,8 +165,15 @@ class Scatter extends Component {
       .attr('xlink:href', d => d.imgpath )
       .attr('width', squareSide )
       .attr('height', squareSide )
+      .attr('x', d => d.x * plotH )
+      .attr('y', d => d.y * plotH )
       .on('mouseover', this.handleMouseover)
       .on('mouseout', this.handleMouseout)
+    }
+
+  moveScatter() {
+    const svgNode = this.svgNode.current;
+    const transitionSettings = transition().duration(this.props.tduration)
 
     select(svgNode)
       .select('g.plotCanvas')
@@ -123,7 +182,7 @@ class Scatter extends Component {
       .transition(transitionSettings)
         .attr('x', d => d.x * plotH )
         .attr('y', d => d.y * plotH )
-    }
+  }
 
   drawHighlight() {
     const svgNode = this.svgNode.current;
@@ -131,7 +190,16 @@ class Scatter extends Component {
     //const highlighted = this.props.data.filter(d => d.edition === this.props.edition);
     const highlighted = this.props.data.filter(d => d.leaf === this.props.leaf);
 
-    // This selection is non-empty only the first time
+    /*
+    This selection is non-empty only the first time. This way of setting the
+    'x' and 'y' attributes of highlights gets around the problem that canvas
+    zooming cannot account for future highlights. Canvas zooming moves all
+    existing elements around, but when props.leaf is changed, the standard
+    way of setting highlight 'x' and 'y' (from props.data) will revert back to
+    the x and y the highlight WOULD have had, had you not canvas zoomed. So we
+    grab the CURRENT x and y of the cluster highlight, which is there from the
+    start and never exits, so it always gets moved by the canvas zoom.   
+    */
     select(svgNode)
       .select('g.plotCanvas')
       .selectAll('rect.highlight')
@@ -142,16 +210,21 @@ class Scatter extends Component {
       .attr('id', d => 't' + d.fullname + '_highlight')
       .attr('width', squareSide )
       .attr('height', squareSide )
+      .attr('x', d => select('#t' + d.fullname + '_cluster').attr('x'))
+      .attr('y', d => select('#t' + d.fullname + '_cluster').attr('y'))
+      .attr('fill', this.props.highlight ? 'rgba(255, 128, 0, 0.5)' : 'rgba(0,0,0,0)')
       .on('mouseover', this.handleMouseover)
       .on('mouseout', this.handleMouseout)
 
+    // this update selection is non-empty any time we change 'leaf', so we need
+    // to reset ids and positions
     select(svgNode)
       .select('g.plotCanvas')
       .selectAll('rect.highlight')
       .data(highlighted)
-      .attr('x', d => d.x * plotH )
-      .attr('y', d => d.y * plotH )
-      .attr('fill', this.props.highlight ? 'rgba(255, 128, 0, 0.5)' : 'rgba(0,0,0,0)')
+      .attr('id', d => 't' + d.fullname + '_highlight')
+      .attr('x', d => select('#t' + d.fullname + '_cluster').attr('x'))
+      .attr('y', d => select('#t' + d.fullname + '_cluster').attr('y'))
 
     select(svgNode)
       .select('g.plotCanvas')
@@ -175,14 +248,20 @@ class Scatter extends Component {
       .transition(transitionSettings)
         .attr('x', d => d.x * plotH )
         .attr('y', d => d.y * plotH )
+    }
+
+  highlightFill() {
+    const svgNode = this.svgNode.current;
+
+    //const highlighted = this.props.data.filter(d => d.edition === this.props.edition);
+    const highlighted = this.props.data.filter(d => d.leaf === this.props.leaf);
 
     select(svgNode)
       .select('g.plotCanvas')
       .selectAll('rect.highlight')
       .data(highlighted)
-      .exit()
-      .remove()
-    }
+      .attr('fill', this.props.highlight ? 'rgba(255, 128, 0, 0.5)' : 'rgba(0,0,0,0)')
+  }
 
   drawCluster() {
     const svgNode = this.svgNode.current;
@@ -198,23 +277,11 @@ class Scatter extends Component {
       .attr('id', d => 't' + d.fullname + '_cluster')
       .attr('width', squareSide )
       .attr('height', squareSide )
-      .on('mouseover', this.handleMouseover)
-      .on('mouseout', this.handleMouseout)
-
-    select(svgNode)
-      .select('g.plotCanvas')
-      .selectAll('rect.cluster')
-      .data(this.props.data)
       .attr('x', d => d.x * plotH )
       .attr('y', d => d.y * plotH )
       .attr('fill', this.props.cluster ? d => clusterColors[d.clusterNum] : 'rgba(0,0,0,0)')
-
-    select(svgNode)
-      .select('g.plotCanvas')
-      .selectAll('rect.cluster')
-      .data(this.props.data)
-      .exit()
-      .remove()
+      .on('mouseover', this.handleMouseover)
+      .on('mouseout', this.handleMouseout)
     }
 
   moveCluster() {
@@ -228,14 +295,17 @@ class Scatter extends Component {
       .transition(transitionSettings)
         .attr('x', d => d.x * plotH )
         .attr('y', d => d.y * plotH )
+    }
+
+  clusterFill() {
+    const svgNode = this.svgNode.current;
 
     select(svgNode)
       .select('g.plotCanvas')
       .selectAll('rect.cluster')
       .data(this.props.data)
-      .exit()
-      .remove()
-    }
+      .attr('fill', this.props.cluster ? d => clusterColors[d.clusterNum] : 'rgba(0,0,0,0)')
+  }
 
   // note: 'e' here is the mouse event itself, which we don't need
   handleMouseover(e, d) {
@@ -292,30 +362,18 @@ class Scatter extends Component {
   drawGroup() {
     const svgPanel = this.svgPanel.current;
 
-    // not sure but this might fail if it were possible to mouse over
-    // and click 'leaf' at the same time
-    // is selectAll really selecting ALL text elements in this div?
-    // I think it must be
-
     select(svgPanel)
       .select('g.panelCanvas')
-      .selectAll('text')
-      .data([0])
-      .enter()
       .append('text')
+      .attr('id','groupLabel')
       .attr('x', 0 )
       .attr('y', 200 )
 
-    select(svgPanel)
-      .select('g.panelCanvas')
-      .selectAll('text')
-      .data([0])
+    select('#groupLabel')
       .text(this.props.leaf)
 
-    select(svgPanel)
-      .select('g.panelCanvas')
-      .selectAll('text')
-      .data([0])
+    select('#groupLabel')
+      .text(this.props.leaf)
       .exit()
       .remove()
     }
@@ -334,7 +392,7 @@ class Scatter extends Component {
           <svg
           ref={this.svgPanel}
           width={svgW}
-          height={svgH / 4}
+          height={svgH / 2}
           />
         </div>
       </div>

@@ -4,12 +4,14 @@ import { transition } from 'd3-transition';
 import { zoom } from 'd3-zoom';
 import { scaleLinear } from 'd3-scale';
 
-const margin = {top: 40, right: 40, bottom: 40, left: 40};
-const plotH = 1200;
-const plotW = 1200;
+const screenH = window.screen.height * window.devicePixelRatio;
+const marginInt = Math.round( screenH / 45 );
+const margin = {top: marginInt, right: marginInt, bottom: marginInt, left: marginInt};
+const plotH = Math.round( screenH / 3 );
+const plotW = plotH;
 const svgW = plotW + margin.left + margin.right;
 const svgH = plotH + margin.top + margin.bottom;
-const squareSide = 30;
+const squareSide = Math.round( screenH / 120 );
 
 const clusterColors = {
   0: 'rgba(69,222,178,0.5)',

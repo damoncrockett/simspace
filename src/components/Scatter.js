@@ -5,11 +5,11 @@ import { zoom } from 'd3-zoom';
 import { scaleLinear } from 'd3-scale';
 
 const margin = {top: 40, right: 40, bottom: 40, left: 40};
-const plotH = 600;
-const plotW = 600;
+const plotH = 1200;
+const plotW = 1200;
 const svgW = plotW + margin.left + margin.right;
 const svgH = plotH + margin.top + margin.bottom;
-const squareSide = 15;
+const squareSide = 30;
 
 const clusterColors = {
   0: 'rgba(69,222,178,0.5)',
@@ -26,10 +26,13 @@ class Scatter extends Component {
     this.drawScatter = this.drawScatter.bind(this);
     this.moveScatter = this.moveScatter.bind(this);
     this.drawHighlight = this.drawHighlight.bind(this);
+    this.removeHighlight = this.removeHighlight.bind(this);
     this.moveHighlight = this.moveHighlight.bind(this);
     this.drawCluster = this.drawCluster.bind(this);
+    this.removeCluster = this.removeCluster.bind(this);
     this.moveCluster = this.moveCluster.bind(this);
     this.drawGroup = this.drawGroup.bind(this);
+    this.removeGroup = this.removeGroup.bind(this);
     this.handleMouseover = this.handleMouseover.bind(this);
     this.handleMouseout = this.handleMouseout.bind(this);
     this.handleZoom = this.handleZoom.bind(this);
@@ -43,22 +46,38 @@ class Scatter extends Component {
 
   componentDidUpdate(prevProps, prevState) {
     // conditional prevents infinite loop
-    if (prevProps.data === null) {
+    if (prevProps.data === null && prevProps.data !== this.props.data) {
       this.drawScatter();
-    } else if (prevProps.data !== null && prevProps.data !== this.props.data) {
+    }
+
+    if (prevProps.data !== null && prevProps.data !== this.props.data) {
       this.moveScatter();
-    } else if (prevProps.data !== null && prevProps.data !== this.props.data && this.props.highlight === true) {
+    }
+
+    if (prevProps.data !== null && prevProps.data !== this.props.data && this.props.highlight === true) {
       this.moveHighlight();
-    } else if (prevProps.data !== null && prevProps.data !== this.props.data && this.props.cluster === true) {
+    }
+
+    if (prevProps.data !== null && prevProps.data !== this.props.data && this.props.cluster === true) {
       this.moveCluster();
     }
 
-    if (prevProps.highlight !== this.props.highlight) {
+    if (prevProps.highlight !== this.props.highlight && this.props.highlight === true) {
       this.drawHighlight();
+      this.drawGroup();
     }
 
-    if (prevProps.cluster !== this.props.cluster) {
+    if (prevProps.highlight !== this.props.highlight && this.props.highlight === false) {
+      this.removeHighlight();
+      this.removeGroup();
+    }
+
+    if (prevProps.cluster !== this.props.cluster && this.props.cluster === true) {
       this.drawCluster();
+    }
+
+    if (prevProps.cluster !== this.props.cluster && this.props.cluster === false) {
+      this.removeCluster();
     }
 
     if (prevProps.leaf !== this.props.leaf) {
@@ -190,7 +209,7 @@ class Scatter extends Component {
     'x' and 'y' attributes of highlights gets around the problem that canvas
     zooming cannot account for future highlights. Canvas zooming moves all
     existing elements around, but when props.leaf is changed, the standard
-    way of setting highlight 'x' and 'y' (from props.data) will revert back to
+    way of setting highlight 'x' and 'y' (from props.data) reverts to
     the x and y the highlight WOULD have had, had you not canvas zoomed. So we
     grab the CURRENT x and y of the texture image, which is there from the
     start and never exits, so it always gets moved by the canvas zoom.
@@ -221,6 +240,8 @@ class Scatter extends Component {
       .attr('x', d => select('#t' + d.fullname + '_textureImage').attr('x'))
       .attr('y', d => select('#t' + d.fullname + '_textureImage').attr('y'))
 
+    // even though we have a remove highlight function below, we still need
+    // this exit selection for changes in props.leaf
     select(svgNode)
       .select('g.plotCanvas')
       .selectAll('rect.highlight')
@@ -228,6 +249,15 @@ class Scatter extends Component {
       .exit()
       .remove()
     }
+
+  removeHighlight() {
+    const svgNode = this.svgNode.current;
+
+    select(svgNode)
+      .select('g.plotCanvas')
+      .selectAll('rect.highlight')
+      .remove()
+  }
 
   moveHighlight() {
     const svgNode = this.svgNode.current;
@@ -248,7 +278,8 @@ class Scatter extends Component {
   drawCluster() {
     const svgNode = this.svgNode.current;
 
-    // This selection is non-empty only the first time
+    // No need for update and exit because if they stay, they don't change,
+    // and if they leave, it is via the function below
     select(svgNode)
       .select('g.plotCanvas')
       .selectAll('rect.cluster')
@@ -261,10 +292,19 @@ class Scatter extends Component {
       .attr('height', squareSide )
       .attr('x', d => select('#t' + d.fullname + '_textureImage').attr('x'))
       .attr('y', d => select('#t' + d.fullname + '_textureImage').attr('y'))
-      .attr('fill', clusterColors[d.clusterNum])
+      .attr('fill', d => clusterColors[d.clusterNum])
       .on('mouseover', this.handleMouseover)
       .on('mouseout', this.handleMouseout)
     }
+
+  removeCluster() {
+    const svgNode = this.svgNode.current;
+
+    select(svgNode)
+      .select('g.plotCanvas')
+      .selectAll('rect.cluster')
+      .remove()
+  }
 
   moveCluster() {
     const svgNode = this.svgNode.current;
@@ -336,19 +376,23 @@ class Scatter extends Component {
 
     select(svgPanel)
       .select('g.panelCanvas')
+      .selectAll('#groupLabel')
+      .data([0])
+      .enter()
       .append('text')
       .attr('id','groupLabel')
       .attr('x', 0 )
       .attr('y', 200 )
-
-    select('#groupLabel')
       .text(this.props.leaf)
 
     select('#groupLabel')
+      .data([0])
       .text(this.props.leaf)
-      .exit()
-      .remove()
     }
+
+  removeGroup() {
+    select('#groupLabel').remove()
+  }
 
   render() {
     return (

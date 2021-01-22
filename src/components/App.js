@@ -226,7 +226,6 @@ class App extends Component {
 
   handleEdition() {
     let randomEdition = editions[Math.floor(Math.random()*editions.length)];
-    console.log(randomEdition);
 
     this.setState(state => ({
       edition: randomEdition
@@ -235,7 +234,6 @@ class App extends Component {
 
   handleLeaf() {
     let randomLeaf = leaves[Math.floor(Math.random()*leaves.length)];
-    console.log(randomLeaf);
 
     this.setState(state => ({
       leaf: randomLeaf

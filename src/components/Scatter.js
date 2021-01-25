@@ -128,6 +128,7 @@ class Scatter extends Component {
   resetZoom(zoomType) {
     const svgNode = this.svgNode.current;
 
+    // using zoom().transform was the trick; tough to know this from d3 docs
     if (zoomType === 'unit') {
       select(svgNode).call(zoom().transform, this.state.unitMarker)
     } else if (zoomType === 'canvas'){
@@ -135,13 +136,12 @@ class Scatter extends Component {
     }
   }
 
-  // note that in both 'unit' and 'canvas' cases, we don't store the margin
-  // translation in the state marker, because we add it every time
   handleZoom(e) {
     const svgNode = this.svgNode.current;
 
     if (this.props.zoom === 'unit') {
 
+      // because we apply this directly as a transform, we have to incl. margin
       const zx = e.transform.x + marginInt;
       const zy = e.transform.y + marginInt;
       const zk = e.transform.k;
@@ -153,6 +153,7 @@ class Scatter extends Component {
         .select('g.plotCanvas')
         .attr('transform', zoomTransform.toString())
 
+      // but we don't store the margin adjustment, bc we add it above every time
       this.setState(state => ({
         unitMarker: e.transform
       }));
@@ -166,6 +167,8 @@ class Scatter extends Component {
                     .domain([0, 1])
                     .range([0, plotH]);
 
+      // here we use margin-unadjusted transform, because we are not actually
+      // applying a transform to the node itself
       this.updatedxScale = e.transform.rescaleX(xScale);
       this.updatedyScale = e.transform.rescaleY(yScale);
 

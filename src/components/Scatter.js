@@ -1,7 +1,7 @@
 import React, { Component } from 'react';
 import { select } from 'd3-selection';
 import { transition } from 'd3-transition';
-import { zoom } from 'd3-zoom';
+import { zoom, zoomIdentity } from 'd3-zoom';
 import { scaleLinear } from 'd3-scale';
 
 const screenH = window.screen.height * window.devicePixelRatio;
@@ -24,6 +24,11 @@ class Scatter extends Component {
   constructor(props) {
     super(props);
 
+    this.state = {
+      unitMarker: zoomIdentity,
+      canvasMarker: zoomIdentity,
+    };
+
     this.drawSVG = this.drawSVG.bind(this);
     this.drawScatter = this.drawScatter.bind(this);
     this.moveScatter = this.moveScatter.bind(this);
@@ -38,6 +43,7 @@ class Scatter extends Component {
     this.handleMouseover = this.handleMouseover.bind(this);
     this.handleMouseout = this.handleMouseout.bind(this);
     this.handleZoom = this.handleZoom.bind(this);
+    this.resetZoom = this.resetZoom.bind(this);
     this.svgNode = React.createRef();
     this.svgPanel = React.createRef();
   }
@@ -86,19 +92,70 @@ class Scatter extends Component {
       this.drawHighlight();
       this.drawGroup();
     }
+
+    if (prevProps.zoom !== this.props.zoom) {
+      this.resetZoom(this.props.zoom);
+    }
   }
 
+  drawSVG() {
+    const svgNode = this.svgNode.current;
+    const svgPanel = this.svgPanel.current;
+
+    select(svgNode)
+      .selectAll('g.plotCanvas')
+      .data([0]) // bc enter selection, prevents appending new 'g' on re-render
+      .enter()
+      .append('g')
+      .attr('class', 'plotCanvas') // purely semantic
+      .attr('transform', `translate(${margin.left},${margin.top})`);
+
+    select(svgPanel)
+      .selectAll('g.panelCanvas')
+      .data([0]) // bc enter selection, prevents appending new 'g' on re-render
+      .enter()
+      .append('g')
+      .attr('class', 'panelCanvas') // purely semantic
+      .attr('transform', `translate(${margin.left},${margin.top})`);
+
+    select(svgNode)
+      .call(zoom()
+        .extent([[0, 0], [plotW, plotH]])
+        .scaleExtent([0.25, 5])
+        .on('zoom', this.handleZoom));
+    }
+
+  resetZoom(zoomType) {
+    const svgNode = this.svgNode.current;
+
+    if (zoomType === 'unit') {
+      select(svgNode).call(zoom().transform, this.state.unitMarker)
+    } else if (zoomType === 'canvas'){
+      select(svgNode).call(zoom().transform, this.state.canvasMarker)
+    }
+  }
+
+  // note that in both 'unit' and 'canvas' cases, we don't store the margin
+  // translation in the state marker, because we add it every time
   handleZoom(e) {
     const svgNode = this.svgNode.current;
-    const zoomTransform = e.transform;
 
     if (this.props.zoom === 'unit') {
+
+      const zx = e.transform.x + marginInt;
+      const zy = e.transform.y + marginInt;
+      const zk = e.transform.k;
+      const zoomTransform = zoomIdentity.translate(zx,zy).scale(zk);
 
       // Not sure why g.plotCanvas is the selection, since d3.zoom
       // is called on the just the svgNode. But it only works like this
       select(svgNode)
         .select('g.plotCanvas')
-        .attr('transform', `translate(${zoomTransform.x},${zoomTransform.y}) scale(${zoomTransform.k})`)
+        .attr('transform', zoomTransform.toString())
+
+      this.setState(state => ({
+        unitMarker: e.transform
+      }));
 
     } else if (this.props.zoom === 'canvas') {
 
@@ -109,8 +166,8 @@ class Scatter extends Component {
                     .domain([0, 1])
                     .range([0, plotH]);
 
-      this.updatedxScale = zoomTransform.rescaleX(xScale);
-      this.updatedyScale = zoomTransform.rescaleY(yScale);
+      this.updatedxScale = e.transform.rescaleX(xScale);
+      this.updatedyScale = e.transform.rescaleY(yScale);
 
       // needed for moving the correct highlights
       const highlighted = this.props.data.filter(d => d.leaf === this.props.leaf);
@@ -137,34 +194,10 @@ class Scatter extends Component {
         .attr('x', d => this.updatedxScale(d.x) )
         .attr('y', d => this.updatedyScale(d.y) )
 
+      this.setState(state => ({
+        canvasMarker: e.transform
+      }));
     }
-  }
-
-  drawSVG() {
-    const svgNode = this.svgNode.current;
-    const svgPanel = this.svgPanel.current;
-
-    select(svgNode)
-      .selectAll('g.plotCanvas')
-      .data([0]) // bc enter selection, prevents appending new 'g' on re-render
-      .enter()
-      .append('g')
-      .attr('class', 'plotCanvas') // purely semantic
-      .attr('transform', `translate(${margin.left},${margin.top})`);
-
-    select(svgPanel)
-      .selectAll('g.panelCanvas')
-      .data([0]) // bc enter selection, prevents appending new 'g' on re-render
-      .enter()
-      .append('g')
-      .attr('class', 'panelCanvas') // purely semantic
-      .attr('transform', `translate(${margin.left},${margin.top})`);
-
-    select(svgNode)
-      .call(zoom()
-      .extent([[0, 0], [plotW, plotH]])
-      .scaleExtent([0.25, 5])
-      .on("zoom", this.handleZoom));
   }
 
   drawScatter() {

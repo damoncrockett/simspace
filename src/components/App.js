@@ -97,128 +97,64 @@ class App extends Component {
     this.handleCanvasZoom = this.handleCanvasZoom.bind(this);
   }
 
-  // most of these functional setStates are not necessary, I believe
   handleUnitZoom() {
-    this.setState(state => ({
-      unitzoom: true,
-      canvaszoom: false,
-      zoom: 'unit'
-    }));
+    this.setState({ unitzoom: true, canvaszoom: false, zoom: 'unit' });
   }
 
   handleCanvasZoom() {
-    this.setState(state => ({
-      unitzoom: false,
-      canvaszoom: true,
-      zoom: 'canvas'
-    }));
+    this.setState({ unitzoom: false, canvaszoom: true, zoom: 'canvas' });
   }
 
   handlePCA() {
-    this.setState(state => ({
-      pca: true,
-      tsne: false,
-      umap: false,
-      dr: 'pca'
-    }));
+    this.setState({ pca: true, tsne: false, umap: false, dr: 'pca' });
   }
 
   handleTSNE() {
-    this.setState(state => ({
-      pca: false,
-      tsne: true,
-      umap: false,
-      dr: 'tsne'
-    }));
+    this.setState({ pca: false, tsne: true, umap: false, dr: 'tsne' });
   }
 
   handleUMAP() {
-    this.setState(state => ({
-      pca: false,
-      tsne: false,
-      umap: true,
-      dr: 'umap'
-    }));
+    this.setState({ pca: false, tsne: false, umap: true, dr: 'umap' });
   }
 
   handleSP() {
-    this.setState(state => ({
-      sp: true,
-      pasfa: false,
-      random1: false,
-      random2: false,
-      random3: false,
-      random4: false,
-      model: 'sp'
-    }));
+    this.setState({ sp: true, pasfa: false, random1: false, random2: false,
+                    random3: false, random4: false, model: 'sp' });
   }
 
   handlePASFA() {
-    this.setState(state => ({
-      sp: false,
-      pasfa: true,
-      random1: false,
-      random2: false,
-      random3: false,
-      random4: false,
-      model: 'pasfa'
-    }));
+    this.setState({ sp: false, pasfa: true, random1: false, random2: false,
+                    random3: false, random4: false, model: 'pasfa' });
   }
 
   handleRandom1() {
-    this.setState(state => ({
-      sp: false,
-      pasfa: false,
-      random1: true,
-      random2: false,
-      random3: false,
-      random4: false,
-      model: 'random1'
-    }));
+    this.setState({ sp: false, pasfa: false, random1: true, random2: false,
+                    random3: false, random4: false, model: 'random1' });
   }
 
   handleRandom2() {
-    this.setState(state => ({
-      sp: false,
-      pasfa: false,
-      random1: false,
-      random2: true,
-      random3: false,
-      random4: false,
-      model: 'random2'
-    }));
+    this.setState({ sp: false, pasfa: false, random1: false, random2: true,
+                    random3: false, random4: false, model: 'random2' });
   }
 
   handleRandom3() {
-    this.setState(state => ({
-      sp: false,
-      pasfa: false,
-      random1: false,
-      random2: false,
-      random3: true,
-      random4: false,
-      model: 'random3'
-    }));
+    this.setState({ sp: false, pasfa: false, random1: false, random2: false,
+                    random3: true, random4: false, model: 'random3' });
   }
 
   handleRandom4() {
-    this.setState(state => ({
-      sp: false,
-      pasfa: false,
-      random1: false,
-      random2: false,
-      random3: false,
-      random4: true,
-      model: 'random4'
-    }));
+    this.setState({ sp: false, pasfa: false, random1: false, random2: false,
+                    random3: false, random4: true, model: 'random4' });
   }
 
+  // need functional setState here because new state depends on old
   handleHighlight() {
     this.setState(state => ({
       highlight: !this.state.highlight
     }));
   }
 
+  // need functional setState here because new state depends on old
   handleCluster() {
     this.setState(state => ({
       cluster: !this.state.cluster
@@ -227,26 +163,18 @@ class App extends Component {
 
   handleEdition() {
     let randomEdition = editions[Math.floor(Math.random()*editions.length)];
-
-    this.setState(state => ({
-      edition: randomEdition
-    }));
+    this.setState({ edition: randomEdition });
   }
 
   handleLeaf() {
     let randomLeaf = leaves[Math.floor(Math.random()*leaves.length)];
-
-    this.setState(state => ({
-      leaf: randomLeaf
-    }));
+    this.setState({ leaf: randomLeaf });
   }
 
   getData() {
     fetch('http://localhost:8888/'+this.state.model+'_'+this.state.dr+'.json')
       .then(response => response.json())
-      .then(data => this.setState(state => ({
-        data: data
-      })));
+      .then(data => this.setState({ data: data }));
   }
 
   componentDidMount() {

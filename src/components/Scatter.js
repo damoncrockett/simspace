@@ -52,6 +52,9 @@ class Scatter extends Component {
     this.drawSVG();
   }
 
+  // Probably not how you're supposed to use this function, but it works ---
+  // the conditionals are necessary at least for any functions that set state,
+  // because state changes always trigger componentDidUpdate
   componentDidUpdate(prevProps, prevState) {
     // conditional prevents infinite loop
     if (prevProps.data === null && prevProps.data !== this.props.data) {
@@ -128,29 +131,35 @@ class Scatter extends Component {
   resetZoom(zoomType) {
     const svgNode = this.svgNode.current;
 
+    /*
+    I'm honestly not sure why the callback approach works below. The callback
+    function won't execute until the state has been set, of course, but what
+    guarantees that either will happen in time?
+
+    Before, I had the zoom resetting after the setState, but not as a callback,
+    and even the PREVIOUS set state hadn't fired yet, so I'd be resetting the
+    zoom to an out-of-date zoom setting. Very bizarre. 
+    */
+
     if (zoomType === 'unit') {
 
-      // mark where we left canvas
-      this.setState(state => ({
-        canvasMarker: zoomTransform(svgNode)
-      }));
-      console.log('set canvasMarker='+this.state.canvasMarker);
-
-      // set the unit transform
+      // mark where we left the previous, plus zoom-resetting callback
       // using zoom().transform was the trick; tough to know this from d3 docs
-      console.log('resetting unit zoom='+this.state.unitMarker);
-      select(svgNode).call(zoom().transform, this.state.unitMarker);
-
+      this.setState(
+        {canvasMarker: zoomTransform(svgNode)},
+        function () {
+          select(svgNode).call(zoom().transform, this.state.unitMarker);
+        }
+      );
     } else if (zoomType === 'canvas'){
 
-      // but we don't store the margin adjustment, bc we add it above every time
-      this.setState(state => ({
-        unitMarker: zoomTransform(svgNode)
-      }));
-      console.log('set unitMarker='+this.state.unitMarker);
-
-      console.log('resetting canvas zoom='+this.state.canvasMarker);
-      select(svgNode).call(zoom().transform, this.state.canvasMarker);
+      // n.b.: we don't store the margin adjustment, bc we add it above every time
+      this.setState(
+        {unitMarker: zoomTransform(svgNode)},
+        function () {
+          select(svgNode).call(zoom().transform, this.state.canvasMarker);
+        }
+      );
     }
   }
 

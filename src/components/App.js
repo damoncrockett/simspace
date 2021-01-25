@@ -97,6 +97,7 @@ class App extends Component {
     this.handleCanvasZoom = this.handleCanvasZoom.bind(this);
   }
 
+  // most of these functional setStates are not necessary, I believe
   handleUnitZoom() {
     this.setState(state => ({
       unitzoom: true,

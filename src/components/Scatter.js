@@ -1,7 +1,7 @@
 import React, { Component } from 'react';
 import { select } from 'd3-selection';
 import { transition } from 'd3-transition';
-import { zoom, zoomIdentity } from 'd3-zoom';
+import { zoom, zoomIdentity, zoomTransform } from 'd3-zoom';
 import { scaleLinear } from 'd3-scale';
 
 const screenH = window.screen.height * window.devicePixelRatio;
@@ -128,16 +128,36 @@ class Scatter extends Component {
   resetZoom(zoomType) {
     const svgNode = this.svgNode.current;
 
-    // using zoom().transform was the trick; tough to know this from d3 docs
     if (zoomType === 'unit') {
-      select(svgNode).call(zoom().transform, this.state.unitMarker)
+
+      // mark where we left canvas
+      this.setState(state => ({
+        canvasMarker: zoomTransform(svgNode)
+      }));
+      console.log('set canvasMarker='+this.state.canvasMarker);
+
+      // set the unit transform
+      // using zoom().transform was the trick; tough to know this from d3 docs
+      console.log('resetting unit zoom='+this.state.unitMarker);
+      select(svgNode).call(zoom().transform, this.state.unitMarker);
+
     } else if (zoomType === 'canvas'){
-      select(svgNode).call(zoom().transform, this.state.canvasMarker)
+
+      // but we don't store the margin adjustment, bc we add it above every time
+      this.setState(state => ({
+        unitMarker: zoomTransform(svgNode)
+      }));
+      console.log('set unitMarker='+this.state.unitMarker);
+
+      console.log('resetting canvas zoom='+this.state.canvasMarker);
+      select(svgNode).call(zoom().transform, this.state.canvasMarker);
     }
   }
 
   handleZoom(e) {
     const svgNode = this.svgNode.current;
+
+    console.log('e.transform='+e.transform);
 
     if (this.props.zoom === 'unit') {
 
@@ -145,18 +165,13 @@ class Scatter extends Component {
       const zx = e.transform.x + marginInt;
       const zy = e.transform.y + marginInt;
       const zk = e.transform.k;
-      const zoomTransform = zoomIdentity.translate(zx,zy).scale(zk);
+      const adjustedTransform = zoomIdentity.translate(zx,zy).scale(zk);
 
       // Not sure why g.plotCanvas is the selection, since d3.zoom
       // is called on the just the svgNode. But it only works like this
       select(svgNode)
         .select('g.plotCanvas')
-        .attr('transform', zoomTransform.toString())
-
-      // but we don't store the margin adjustment, bc we add it above every time
-      this.setState(state => ({
-        unitMarker: e.transform
-      }));
+        .attr('transform', adjustedTransform.toString())
 
     } else if (this.props.zoom === 'canvas') {
 
@@ -196,10 +211,6 @@ class Scatter extends Component {
         .data(this.props.data)
         .attr('x', d => this.updatedxScale(d.x) )
         .attr('y', d => this.updatedyScale(d.y) )
-
-      this.setState(state => ({
-        canvasMarker: e.transform
-      }));
     }
   }
 

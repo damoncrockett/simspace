@@ -13,6 +13,15 @@ const svgW = plotW + margin.left + margin.right;
 const svgH = plotH + margin.top + margin.bottom;
 const squareSide = Math.round( screenH / 120 );
 
+// this works bc all data is normalized ahead of time
+const xScale = scaleLinear()
+              .domain([0, 1])
+              .range([0, plotW]);
+
+const yScale = scaleLinear()
+              .domain([0, 1])
+              .range([0, plotH]);
+
 const clusterColors = {
   0: 'rgba(69,222,178,0.5)',
   1: 'rgba(249,13,160,0.5)',
@@ -97,7 +106,7 @@ class Scatter extends Component {
     }
 
     if (prevProps.zoom !== this.props.zoom) {
-      this.resetZoom(this.props.zoom);
+      this.resetZoom();
     }
   }
 
@@ -128,7 +137,7 @@ class Scatter extends Component {
         .on('zoom', this.handleZoom));
     }
 
-  resetZoom(zoomType) {
+  resetZoom() {
     const svgNode = this.svgNode.current;
 
     /*
@@ -137,26 +146,22 @@ class Scatter extends Component {
     guarantees that either will happen in time?
 
     Before, I had the zoom resetting after the setState, but not as a callback,
-    and even the PREVIOUS set state hadn't fired yet, so I'd be resetting the
-    zoom to an out-of-date zoom setting. Very bizarre. 
+    and even the PREVIOUS setState hadn't fired yet, so I'd be resetting the
+    zoom to an out-of-date zoom setting. Very bizarre.
     */
 
-    if (zoomType === 'unit') {
+    if (this.props.zoom === 'unit') {
 
       // mark where we left the previous, plus zoom-resetting callback
       // using zoom().transform was the trick; tough to know this from d3 docs
-      this.setState(
-        {canvasMarker: zoomTransform(svgNode)},
-        function () {
+      this.setState({ canvasMarker: zoomTransform(svgNode) }, function () {
           select(svgNode).call(zoom().transform, this.state.unitMarker);
         }
       );
-    } else if (zoomType === 'canvas'){
+    } else if (this.props.zoom === 'canvas'){
 
       // n.b.: we don't store the margin adjustment, bc we add it above every time
-      this.setState(
-        {unitMarker: zoomTransform(svgNode)},
-        function () {
+      this.setState({ unitMarker: zoomTransform(svgNode) }, function () {
           select(svgNode).call(zoom().transform, this.state.canvasMarker);
         }
       );
@@ -165,8 +170,6 @@ class Scatter extends Component {
 
   handleZoom(e) {
     const svgNode = this.svgNode.current;
-
-    console.log('e.transform='+e.transform);
 
     if (this.props.zoom === 'unit') {
 
@@ -183,13 +186,6 @@ class Scatter extends Component {
         .attr('transform', adjustedTransform.toString())
 
     } else if (this.props.zoom === 'canvas') {
-
-      const xScale = scaleLinear()
-                    .domain([0, 1])
-                    .range([0, plotW]);
-      const yScale = scaleLinear()
-                    .domain([0, 1])
-                    .range([0, plotH]);
 
       // here we use margin-unadjusted transform, because we are not actually
       // applying a transform to the node itself
@@ -237,8 +233,8 @@ class Scatter extends Component {
       .attr('xlink:href', d => d.imgpath )
       .attr('width', squareSide )
       .attr('height', squareSide )
-      .attr('x', d => d.x * plotH )
-      .attr('y', d => d.y * plotH )
+      .attr('x', d => xScale(d.x) )
+      .attr('y', d => yScale(d.y) )
       .on('mouseover', this.handleMouseover)
       .on('mouseout', this.handleMouseout)
     }
@@ -247,13 +243,29 @@ class Scatter extends Component {
     const svgNode = this.svgNode.current;
     const transitionSettings = transition().duration(this.props.tduration)
 
+    if (this.props.zoom === 'unit') {
+
+      // if we've canvas-zoomed and we switch models, we need to rescale, and
+      // if we are in unit zoom, we need to grab the stored canvasMarker
+      this.updatedxScale = this.state.canvasMarker.rescaleX(xScale);
+      this.updatedyScale = this.state.canvasMarker.rescaleY(yScale);
+
+    } else if (this.props.zoom === 'canvas') {
+
+      // if we've canvas-zoomed and we switch models, we need to rescale, and
+      // if we are in canvas zoom, we need to grab the CURRENT transform
+      this.updatedxScale = zoomTransform(svgNode).rescaleX(xScale);
+      this.updatedyScale = zoomTransform(svgNode).rescaleY(yScale);
+
+    }
+
     select(svgNode)
       .select('g.plotCanvas')
       .selectAll('image')
       .data(this.props.data)
       .transition(transitionSettings)
-        .attr('x', d => d.x * plotH )
-        .attr('y', d => d.y * plotH )
+        .attr('x', d => this.updatedxScale(d.x) )
+        .attr('y', d => this.updatedyScale(d.y) )
   }
 
   drawHighlight() {
@@ -263,15 +275,15 @@ class Scatter extends Component {
     const highlighted = this.props.data.filter(d => d.leaf === this.props.leaf);
 
     /*
-    This selection is non-empty only the first time. This way of setting the
-    'x' and 'y' attributes of highlights gets around the problem that canvas
-    zooming cannot account for future highlights. Canvas zooming moves all
-    existing elements around, but when props.leaf is changed, the standard
-    way of setting highlight 'x' and 'y' (from props.data) reverts to
-    the x and y the highlight WOULD have had, had you not canvas zoomed. So we
-    grab the CURRENT x and y of the texture image, which is there from the
+    This way of setting the 'x' and 'y' attributes of highlights gets around the
+    problem that canvas zooming cannot account for future highlights. Canvas
+    zooming moves all existing elements around, but when props.leaf is changed,
+    the standard way of setting highlight 'x' and 'y' (from props.data) reverts
+    to the x and y the highlight WOULD have had, had you not canvas zoomed. So
+    we grab the CURRENT x and y of the texture image, which is there from the
     start and never exits, so it always gets moved by the canvas zoom.
     */
+
     select(svgNode)
       .select('g.plotCanvas')
       .selectAll('rect.highlight')
@@ -324,14 +336,26 @@ class Scatter extends Component {
     //const highlighted = this.props.data.filter(d => d.edition === this.props.edition);
     const highlighted = this.props.data.filter(d => d.leaf === this.props.leaf);
 
+    if (this.props.zoom === 'unit') {
+
+      this.updatedxScale = this.state.canvasMarker.rescaleX(xScale);
+      this.updatedyScale = this.state.canvasMarker.rescaleY(yScale);
+
+    } else if (this.props.zoom === 'canvas') {
+
+      this.updatedxScale = zoomTransform(svgNode).rescaleX(xScale);
+      this.updatedyScale = zoomTransform(svgNode).rescaleY(yScale);
+
+    }
+
     select(svgNode)
       .select('g.plotCanvas')
       .selectAll('rect.highlight')
       .data(highlighted)
       .transition(transitionSettings)
-        .attr('x', d => d.x * plotH )
-        .attr('y', d => d.y * plotH )
-    }
+        .attr('x', d => this.updatedxScale(d.x) )
+        .attr('y', d => this.updatedyScale(d.y) )
+  }
 
   drawCluster() {
     const svgNode = this.svgNode.current;
@@ -368,14 +392,26 @@ class Scatter extends Component {
     const svgNode = this.svgNode.current;
     const transitionSettings = transition().duration(this.props.tduration);
 
+    if (this.props.zoom === 'unit') {
+
+      this.updatedxScale = this.state.canvasMarker.rescaleX(xScale);
+      this.updatedyScale = this.state.canvasMarker.rescaleY(yScale);
+
+    } else if (this.props.zoom === 'canvas') {
+
+      this.updatedxScale = zoomTransform(svgNode).rescaleX(xScale);
+      this.updatedyScale = zoomTransform(svgNode).rescaleY(yScale);
+
+    }
+
     select(svgNode)
       .select('g.plotCanvas')
       .selectAll('rect.cluster')
       .data(this.props.data)
       .transition(transitionSettings)
-        .attr('x', d => d.x * plotH )
-        .attr('y', d => d.y * plotH )
-    }
+        .attr('x', d => this.updatedxScale(d.x) )
+        .attr('y', d => this.updatedyScale(d.y) )
+  }
 
   // note: 'e' here is the mouse event itself, which we don't need
   handleMouseover(e, d) {

@@ -19,7 +19,7 @@ class App extends Component {
       tduration: 5000,
       highlight: false,
       cluster: false,
-      edition: '1249',
+      edition: '1',
       leaf: '1249_4',
       unitzoom: true,
       canvaszoom: false,
@@ -43,19 +43,19 @@ class App extends Component {
   }
 
   getEditions() {
-    fetch('http://localhost:8888/'+'_editions.json')
+    fetch('http://localhost:8888/'+'__editions.json')
       .then(response => response.json())
       .then( data => this.setState({ editions: data.edition }) );
   }
 
   getLeaves() {
-    fetch('http://localhost:8888/'+'_leaves.json')
+    fetch('http://localhost:8888/'+'__leaves.json')
       .then(response => response.json())
       .then( data => this.setState({ leaves: data.leaf }) );
   }
 
   getData() {
-    fetch('http://localhost:8888/'+this.state.model+'_'+this.state.dr+'.json')
+    fetch('http://localhost:8888/_'+this.state.model+'_'+this.state.dr+'.json')
       .then(response => response.json())
       .then(data => this.setState({ data: data }));
   }

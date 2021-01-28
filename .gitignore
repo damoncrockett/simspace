@@ -2,3 +2,4 @@
 node_modules
 src/assets/json/img
 src/assets/json/prints
+utils/__pycache__

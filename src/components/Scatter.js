@@ -100,7 +100,14 @@ class Scatter extends Component {
       this.removeCluster();
     }
 
+    /*
     if (prevProps.leaf !== this.props.leaf) {
+      this.drawHighlight();
+      this.drawGroup();
+    }
+    */
+
+    if (prevProps.edition !== this.props.edition) {
       this.drawHighlight();
       this.drawGroup();
     }
@@ -197,7 +204,8 @@ class Scatter extends Component {
       this.updatedyScale = e.transform.rescaleY(yScale);
 
       // needed for moving the correct highlights
-      const highlighted = this.props.data.filter(d => d.leaf === this.props.leaf);
+      //const highlighted = this.props.data.filter(d => d.leaf === this.props.leaf);
+      const highlighted = this.props.data.filter(d => d.edition === this.props.edition);
 
       // rescale x and y domains (above) then apply to all visible elements below
       select(svgNode)
@@ -281,8 +289,8 @@ class Scatter extends Component {
   drawHighlight() {
     const svgNode = this.svgNode.current;
 
-    //const highlighted = this.props.data.filter(d => d.edition === this.props.edition);
-    const highlighted = this.props.data.filter(d => d.leaf === this.props.leaf);
+    const highlighted = this.props.data.filter(d => d.edition === this.props.edition);
+    //const highlighted = this.props.data.filter(d => d.leaf === this.props.leaf);
 
     /*
     This way of setting the 'x' and 'y' attributes of highlights gets around the
@@ -343,8 +351,8 @@ class Scatter extends Component {
     const svgNode = this.svgNode.current;
     const transitionSettings = transition().duration(this.props.tduration);
 
-    //const highlighted = this.props.data.filter(d => d.edition === this.props.edition);
-    const highlighted = this.props.data.filter(d => d.leaf === this.props.leaf);
+    const highlighted = this.props.data.filter(d => d.edition === this.props.edition);
+    //const highlighted = this.props.data.filter(d => d.leaf === this.props.leaf);
 
     if (this.props.zoom === 'unit') {
 
@@ -454,8 +462,59 @@ class Scatter extends Component {
       .attr('width', 158 )
       .attr('height', 132 )
       .attr('x', 0 )
-      .attr('y', 40)
-      .attr('id', 't' + d.fullname + '_i')
+      .attr('y', 25)
+      .attr('id', 't' + d.fullname + '_it')
+
+    select(svgPanel)
+      .select('g.panelCanvas')
+      .append('image')
+      .attr('xlink:href', d.printpath)
+      .attr('width', 158 )
+      .attr('height', 132 )
+      .attr('x', 0 )
+      .attr('y', 215)
+      .attr('id', 't' + d.fullname + '_ip')
+
+    select(svgPanel)
+      .select('g.panelCanvas')
+      .append('text')
+      .attr('x', 0 )
+      .attr('y', 400 )
+      .attr('id', 't' + d.fullname + '_title')
+      .text(d.title)
+
+    select(svgPanel)
+      .select('g.panelCanvas')
+      .append('text')
+      .attr('x', 0 )
+      .attr('y', 425 )
+      .attr('id', 't' + d.fullname + '_year')
+      .text(d.year)
+
+    select(svgPanel)
+      .select('g.panelCanvas')
+      .append('text')
+      .attr('x', 0 )
+      .attr('y', 480 )
+      .attr('id', 't' + d.fullname + '_support')
+      .text(d.support)
+
+    select(svgPanel)
+      .select('g.panelCanvas')
+      .append('text')
+      .attr('x', 0 )
+      .attr('y', 505 )
+      .attr('id', 't' + d.fullname + '_dims')
+      .text(d.dims)
+
+    select(svgPanel)
+      .select('g.panelCanvas')
+      .append('text')
+      .attr('x', 0 )
+      .attr('y', 560 )
+      .attr('id', 't' + d.fullname + '_edition')
+      .text('Edition: '+d.edition)
+
     }
 
   handleMouseout(e, d) {
@@ -472,7 +531,13 @@ class Scatter extends Component {
         .attr('height', squareSide )
 
       select('#t' + d.fullname ).remove()
-      select('#t' + d.fullname + '_i').remove()
+      select('#t' + d.fullname + '_title').remove()
+      select('#t' + d.fullname + '_year').remove()
+      select('#t' + d.fullname + '_support').remove()
+      select('#t' + d.fullname + '_dims').remove()
+      select('#t' + d.fullname + '_edition').remove()
+      select('#t' + d.fullname + '_it').remove()
+      select('#t' + d.fullname + '_ip').remove()
     }
 
   drawGroup() {
@@ -487,11 +552,11 @@ class Scatter extends Component {
       .attr('id','groupLabel')
       .attr('x', 0 )
       .attr('y', 200 )
-      .text(this.props.leaf)
+      .text('Highlighted: Edition '+this.props.edition)
 
     select('#groupLabel')
       .data([0])
-      .text(this.props.leaf)
+      .text('Highlighted: Edition '+this.props.edition)
     }
 
   removeGroup() {
@@ -512,7 +577,7 @@ class Scatter extends Component {
           <svg
           ref={this.svgPanel}
           width={svgW}
-          height={svgH / 2}
+          height={svgH}
           />
         </div>
       </div>

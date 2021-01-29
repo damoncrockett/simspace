@@ -32,10 +32,10 @@ g {
 }
 
 .fieldPanel {
-  right: 160px;
-	top: 40px;
+  right: 200px;
+	top: 8px;
   position: fixed;
-  max-width: 400px;
+  max-width: 500px;
   border-radius: 10px;
 	border-color: var(--panel-stroke);
 	border-width: 1px;
@@ -57,7 +57,7 @@ g {
 
 .upperpanel {
   right: 40px;
-	top: 40px;
+	top: 10px;
   position: fixed;
 	max-width: 100px;
 	background-color: var(--panel-background);

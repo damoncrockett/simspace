@@ -40,7 +40,7 @@ def row2jso(xf,xcol,ycol,i):
     jso = {}
     jso['fullname'] = row.fullname
     jso['leaf'] = row.leaf
-    jso['edition'] = int(row.edition)
+    jso['edition'] = str(int(row.edition))
     jso['title'] = row.title
     jso['year'] = row.year
     jso['support'] = row.support

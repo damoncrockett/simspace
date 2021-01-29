@@ -23,7 +23,10 @@ class App extends Component {
       leaf: '1249_4',
       unitzoom: true,
       canvaszoom: false,
-      zoom: 'unit'
+      zoom: 'unit',
+      icon: 'texturepath',
+      texture: true,
+      print: false
     };
 
     this.getEditions = this.getEditions.bind(this);
@@ -40,6 +43,8 @@ class App extends Component {
     this.handleLeaf = this.handleLeaf.bind(this);
     this.handleUnitZoom = this.handleUnitZoom.bind(this);
     this.handleCanvasZoom = this.handleCanvasZoom.bind(this);
+    this.handleTextureImage = this.handleTextureImage.bind(this);
+    this.handlePrintImage = this.handlePrintImage.bind(this);
   }
 
   getEditions() {
@@ -78,6 +83,14 @@ class App extends Component {
 
   handlePASFA() {
     this.setState({ sp: false, pasfa: true, model: 'pasfa' });
+  }
+
+  handleTextureImage() {
+    this.setState({ texture: true, print: false, icon: 'texturepath' });
+  }
+
+  handlePrintImage() {
+    this.setState({ texture: false, print: true, icon: 'printpath' });
   }
 
   // need functional setState here because new state depends on old
@@ -168,6 +181,16 @@ class App extends Component {
       color: this.state.pasfa ? 'black' : stroke
     };
 
+    const textureStyle = {
+      backgroundColor: this.state.texture ? 'white' : bkgd,
+      color: this.state.texture ? 'black' : stroke
+    };
+
+    const printStyle = {
+      backgroundColor: this.state.print ? 'white' : bkgd,
+      color: this.state.print ? 'black' : stroke
+    };
+
     const highlightStyle = {
       backgroundColor: this.state.highlight ? 'white' : bkgd,
       color: this.state.highlight ? 'black' : stroke
@@ -199,6 +222,7 @@ class App extends Component {
             edition={this.state.edition}
             leaf={this.state.leaf}
             zoom={this.state.zoom}
+            icon={this.state.icon}
           />
         </div>
         <div className='upperpanel'>
@@ -213,6 +237,8 @@ class App extends Component {
           <div className='buttonStrip'>
             <button onClick={this.handleUnitZoom} style={unitZoomStyle}>UNIT ZOOM</button>
             <button onClick={this.handleCanvasZoom} style={canvasZoomStyle}>CANVAS ZOOM</button>
+            <button onClick={this.handleTextureImage} style={textureStyle}>TEXTURE</button>
+            <button onClick={this.handlePrintImage} style={printStyle}>PRINT</button>
           </div>
         </div>
         <div className='panel'>

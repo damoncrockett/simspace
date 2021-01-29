@@ -108,6 +108,10 @@ class Scatter extends Component {
     if (prevProps.zoom !== this.props.zoom) {
       this.resetZoom();
     }
+
+    if (prevProps.icon !== this.props.icon) {
+      this.drawScatter();
+    }
   }
 
   drawSVG() {
@@ -230,13 +234,19 @@ class Scatter extends Component {
       .enter()
       .append('image')
       .attr('id', d => 't' + d.fullname + '_textureImage')
-      .attr('xlink:href', d => d.texturepath )
+      .attr('xlink:href', d => d[this.props.icon] )
       .attr('width', squareSide )
       .attr('height', squareSide )
       .attr('x', d => xScale(d.x) )
       .attr('y', d => yScale(d.y) )
       .on('mouseover', this.handleMouseover)
       .on('mouseout', this.handleMouseout)
+
+    select(svgNode)
+      .select('g.plotCanvas')
+      .selectAll('image')
+      .data(this.props.data)
+      .attr('xlink:href', d => d[this.props.icon] )
     }
 
   moveScatter() {

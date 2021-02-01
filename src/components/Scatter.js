@@ -100,14 +100,7 @@ class Scatter extends Component {
       this.removeCluster();
     }
 
-    /*
-    if (prevProps.leaf !== this.props.leaf) {
-      this.drawHighlight();
-      this.drawGroup();
-    }
-    */
-
-    if (prevProps.edition !== this.props.edition) {
+    if (prevProps.selection !== this.props.selection) {
       this.drawHighlight();
       this.drawGroup();
     }
@@ -204,8 +197,7 @@ class Scatter extends Component {
       this.updatedyScale = e.transform.rescaleY(yScale);
 
       // needed for moving the correct highlights
-      //const highlighted = this.props.data.filter(d => d.leaf === this.props.leaf);
-      const highlighted = this.props.data.filter(d => d.edition === this.props.edition);
+      const highlighted = this.props.data.filter(d => d.edition === this.props.selection);
 
       // rescale x and y domains (above) then apply to all visible elements below
       select(svgNode)
@@ -289,8 +281,7 @@ class Scatter extends Component {
   drawHighlight() {
     const svgNode = this.svgNode.current;
 
-    const highlighted = this.props.data.filter(d => d.edition === this.props.edition);
-    //const highlighted = this.props.data.filter(d => d.leaf === this.props.leaf);
+    const highlighted = this.props.data.filter(d => d.edition === this.props.selection);
 
     /*
     This way of setting the 'x' and 'y' attributes of highlights gets around the
@@ -351,8 +342,7 @@ class Scatter extends Component {
     const svgNode = this.svgNode.current;
     const transitionSettings = transition().duration(this.props.tduration);
 
-    const highlighted = this.props.data.filter(d => d.edition === this.props.edition);
-    //const highlighted = this.props.data.filter(d => d.leaf === this.props.leaf);
+    const highlighted = this.props.data.filter(d => d.edition === this.props.selection);
 
     if (this.props.zoom === 'unit') {
 
@@ -552,11 +542,11 @@ class Scatter extends Component {
       .attr('id','groupLabel')
       .attr('x', 0 )
       .attr('y', 200 )
-      .text('Highlighted: Edition '+this.props.edition)
+      .text('Highlighted: Edition '+this.props.selection)
 
     select('#groupLabel')
       .data([0])
-      .text('Highlighted: Edition '+this.props.edition)
+      .text('Highlighted: Edition '+this.props.selection)
     }
 
   removeGroup() {

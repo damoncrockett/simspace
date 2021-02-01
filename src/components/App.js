@@ -19,8 +19,7 @@ class App extends Component {
       tduration: 5000,
       highlight: false,
       cluster: false,
-      edition: '1',
-      leaf: '1249_4',
+      selection: '1',
       unitzoom: true,
       canvaszoom: false,
       zoom: 'unit',
@@ -29,8 +28,6 @@ class App extends Component {
       print: false
     };
 
-    this.getEditions = this.getEditions.bind(this);
-    this.getLeaves = this.getLeaves.bind(this);
     this.getData = this.getData.bind(this);
     this.handlePCA = this.handlePCA.bind(this);
     this.handleTSNE = this.handleTSNE.bind(this);
@@ -39,24 +36,11 @@ class App extends Component {
     this.handlePASFA = this.handlePASFA.bind(this);
     this.handleHighlight = this.handleHighlight.bind(this);
     this.handleCluster = this.handleCluster.bind(this);
-    this.handleEdition = this.handleEdition.bind(this);
-    this.handleLeaf = this.handleLeaf.bind(this);
+    this.handleSelection = this.handleSelection.bind(this);
     this.handleUnitZoom = this.handleUnitZoom.bind(this);
     this.handleCanvasZoom = this.handleCanvasZoom.bind(this);
     this.handleTextureImage = this.handleTextureImage.bind(this);
     this.handlePrintImage = this.handlePrintImage.bind(this);
-  }
-
-  getEditions() {
-    fetch('http://localhost:8888/'+'__editions.json')
-      .then(response => response.json())
-      .then( data => this.setState({ editions: data.edition }) );
-  }
-
-  getLeaves() {
-    fetch('http://localhost:8888/'+'__leaves.json')
-      .then(response => response.json())
-      .then( data => this.setState({ leaves: data.leaf }) );
   }
 
   getData() {
@@ -107,14 +91,8 @@ class App extends Component {
     }));
   }
 
-  handleEdition() {
-    let randomEdition = this.state.editions[Math.floor(Math.random()*this.state.editions.length)];
-    this.setState({ edition: randomEdition });
-  }
-
-  handleLeaf() {
-    let randomLeaf = this.state.leaves[Math.floor(Math.random()*this.state.leaves.length)];
-    this.setState({ leaf: randomLeaf });
+  handleSelection(e) {
+    this.setState({ selection: e.target.value, highlight: true });
   }
 
   handleUnitZoom() {
@@ -127,8 +105,6 @@ class App extends Component {
 
   componentDidMount() {
     this.getData();
-    this.getEditions();
-    this.getLeaves();
   }
 
   componentDidUpdate(prevProps, prevState) {
@@ -201,15 +177,7 @@ class App extends Component {
       color: this.state.cluster ? 'black' : stroke
     };
 
-    const editionStyle = {
-      backgroundColor: bkgd,
-      color: stroke
-    };
-
-    const leafStyle = {
-      backgroundColor: bkgd,
-      color: stroke
-    };
+    const editions = Array.from({length: 50}, (_, i) => i + 1);
 
     return (
       <div className='app'>
@@ -219,8 +187,7 @@ class App extends Component {
             tduration={this.state.tduration}
             highlight={this.state.highlight}
             cluster={this.state.cluster}
-            edition={this.state.edition}
-            leaf={this.state.leaf}
+            selection={this.state.selection}
             zoom={this.state.zoom}
             icon={this.state.icon}
           />
@@ -229,8 +196,9 @@ class App extends Component {
           <div className='buttonStrip'>
             <button onClick={this.handleHighlight} style={highlightStyle}>HIGHLIGHT</button>
             <button onClick={this.handleCluster} style={clusterStyle}>CLUSTER</button>
-            <button onClick={this.handleEdition} style={editionStyle}>EDITION</button>
-            <button onClick={this.handleLeaf} style={leafStyle}>LEAF</button>
+            <select value={this.state.selection} onChange={this.handleSelection}>
+              {editions.map( (value, i) => {return <option value={value} key={i}>{value}</option>} )}
+            </select>
           </div>
         </div>
         <div className='midpanel'>

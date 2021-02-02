@@ -55,11 +55,11 @@ class App extends Component {
       .then(response => response.json())
       .then(data => this.setState({
         data: data,
-        leaves: data.map(d => d.leaf),
-        editions: data.map(d => d.edition),
-        years: data.map(d => d.year),
-        supports: data.map(d => d.support),
-        dims: data.map(d => d.dims),
+        leaves: uniq(data.map(d => d.leaf)).sort(),
+        editions: uniq(data.map(d => d.edition)).sort(),
+        years: uniq(data.map(d => d.year)).sort(),
+        supports: uniq(data.map(d => d.support)).sort(),
+        dims: uniq(data.map(d => d.dims)).sort(),
       }));
     }
 
@@ -106,11 +106,28 @@ class App extends Component {
   }
 
   handleSelectionProp(e) {
-    this.setState({ selectionProp: e.target.value, highlight: true });
+    const selectionProp = e.target.value;
+    let newSelection = '';
+
+    // if we change selectionProp, selection is changed to first value
+    // of the new selectionProp
+    if (selectionProp === 'leaf') {
+      newSelection = this.state.leaves[0]
+    } else if (selectionProp === 'edition') {
+      newSelection = this.state.editions[0]
+    } else if (selectionProp === 'year') {
+      newSelection = this.state.years[0]
+    } else if (selectionProp === 'support') {
+      newSelection = this.state.supports[0]
+    } else if (selectionProp === 'dims') {
+      newSelection = this.state.dims[0]
+    }
+
+    this.setState({ selectionProp: e.target.value, selection: newSelection });
   }
 
   handleSelection(e) {
-    this.setState({ selection: e.target.value, highlight: true });
+    this.setState({ selection: e.target.value });
   }
 
   handleUnitZoom() {
@@ -202,15 +219,15 @@ class App extends Component {
 
     let selectionOptions = '';
     if (this.state.selectionProp === 'leaf') {
-      selectionOptions = uniq(this.state.leaves)
+      selectionOptions = this.state.leaves
     } else if (this.state.selectionProp === 'edition') {
-      selectionOptions = uniq(this.state.editions)
+      selectionOptions = this.state.editions
     } else if (this.state.selectionProp === 'year') {
-      selectionOptions = uniq(this.state.years)
+      selectionOptions = this.state.years
     } else if (this.state.selectionProp === 'support') {
-      selectionOptions = uniq(this.state.supports)
+      selectionOptions = this.state.supports
     } else if (this.state.selectionProp === 'dims') {
-      selectionOptions = uniq(this.state.dims)
+      selectionOptions = this.state.dims
     }
 
     return (

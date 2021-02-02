@@ -96,11 +96,7 @@ class Scatter extends Component {
       this.removeCluster();
     }
 
-    if (prevProps.selection !== this.props.selection) {
-      this.drawHighlight();
-    }
-
-    if (prevProps.selectionProp !== this.props.selectionProp) {
+    if (prevProps.selection !== this.props.selection && this.props.highlight === true) {
       this.drawHighlight();
     }
 
@@ -308,8 +304,8 @@ class Scatter extends Component {
       .on('mouseover', this.handleMouseover)
       .on('mouseout', this.handleMouseout)
 
-    // this update selection is non-empty any time we change 'leaf', so we need
-    // to reset ids and positions
+    // this update selection is non-empty any time we change the
+    // highlight selection, so we need to reset ids and positions
     select(svgNode)
       .select('g.plotCanvas')
       .selectAll('rect.highlight')
@@ -319,7 +315,7 @@ class Scatter extends Component {
       .attr('y', d => select('#t' + d.fullname + '_textureImage').attr('y'))
 
     // even though we have a remove highlight function below, we still need
-    // this exit selection for changes in props.leaf
+    // this exit selection for changes in props.selection
     select(svgNode)
       .select('g.plotCanvas')
       .selectAll('rect.highlight')

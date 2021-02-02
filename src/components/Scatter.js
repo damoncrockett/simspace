@@ -47,8 +47,6 @@ class Scatter extends Component {
     this.drawCluster = this.drawCluster.bind(this);
     this.removeCluster = this.removeCluster.bind(this);
     this.moveCluster = this.moveCluster.bind(this);
-    this.drawGroup = this.drawGroup.bind(this);
-    this.removeGroup = this.removeGroup.bind(this);
     this.handleMouseover = this.handleMouseover.bind(this);
     this.handleMouseout = this.handleMouseout.bind(this);
     this.handleZoom = this.handleZoom.bind(this);
@@ -84,12 +82,10 @@ class Scatter extends Component {
 
     if (prevProps.highlight !== this.props.highlight && this.props.highlight === true) {
       this.drawHighlight();
-      this.drawGroup();
     }
 
     if (prevProps.highlight !== this.props.highlight && this.props.highlight === false) {
       this.removeHighlight();
-      this.removeGroup();
     }
 
     if (prevProps.cluster !== this.props.cluster && this.props.cluster === true) {
@@ -102,7 +98,10 @@ class Scatter extends Component {
 
     if (prevProps.selection !== this.props.selection) {
       this.drawHighlight();
-      this.drawGroup();
+    }
+
+    if (prevProps.selectionProp !== this.props.selectionProp) {
+      this.drawHighlight();
     }
 
     if (prevProps.zoom !== this.props.zoom) {
@@ -197,7 +196,7 @@ class Scatter extends Component {
       this.updatedyScale = e.transform.rescaleY(yScale);
 
       // needed for moving the correct highlights
-      const highlighted = this.props.data.filter(d => d.edition === this.props.selection);
+      const highlighted = this.props.data.filter(d => d[this.props.selectionProp] === this.props.selection);
 
       // rescale x and y domains (above) then apply to all visible elements below
       select(svgNode)
@@ -281,7 +280,7 @@ class Scatter extends Component {
   drawHighlight() {
     const svgNode = this.svgNode.current;
 
-    const highlighted = this.props.data.filter(d => d.edition === this.props.selection);
+    const highlighted = this.props.data.filter(d => d[this.props.selectionProp] === this.props.selection);
 
     /*
     This way of setting the 'x' and 'y' attributes of highlights gets around the
@@ -342,7 +341,7 @@ class Scatter extends Component {
     const svgNode = this.svgNode.current;
     const transitionSettings = transition().duration(this.props.tduration);
 
-    const highlighted = this.props.data.filter(d => d.edition === this.props.selection);
+    const highlighted = this.props.data.filter(d => d[this.props.selectionProp] === this.props.selection);
 
     if (this.props.zoom === 'unit') {
 
@@ -529,29 +528,6 @@ class Scatter extends Component {
       select('#t' + d.fullname + '_it').remove()
       select('#t' + d.fullname + '_ip').remove()
     }
-
-  drawGroup() {
-    const svgPanel = this.svgPanel.current;
-
-    select(svgPanel)
-      .select('g.panelCanvas')
-      .selectAll('#groupLabel')
-      .data([0])
-      .enter()
-      .append('text')
-      .attr('id','groupLabel')
-      .attr('x', 0 )
-      .attr('y', 200 )
-      .text('Highlighted: Edition '+this.props.selection)
-
-    select('#groupLabel')
-      .data([0])
-      .text('Highlighted: Edition '+this.props.selection)
-    }
-
-  removeGroup() {
-    select('#groupLabel').remove()
-  }
 
   render() {
     return (

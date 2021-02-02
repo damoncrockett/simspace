@@ -1,5 +1,7 @@
 import React, { Component } from 'react';
 import Scatter from './Scatter';
+import { uniq } from 'lodash';
+import { histogram } from 'd3-array';
 
 class App extends Component {
   constructor(props) {
@@ -10,8 +12,11 @@ class App extends Component {
       tsne: true,
       umap: false,
       data: null,
-      editions: null,
-      leaves: null,
+      leaves: [''],
+      editions: [''],
+      years: [''],
+      supports: [''],
+      dims: [''],
       dr: 'tsne',
       sp: true,
       pasfa: false,
@@ -19,7 +24,8 @@ class App extends Component {
       tduration: 5000,
       highlight: false,
       cluster: false,
-      selection: '1',
+      selection: '1249_4',
+      selectionProp: 'leaf',
       unitzoom: true,
       canvaszoom: false,
       zoom: 'unit',
@@ -37,6 +43,7 @@ class App extends Component {
     this.handleHighlight = this.handleHighlight.bind(this);
     this.handleCluster = this.handleCluster.bind(this);
     this.handleSelection = this.handleSelection.bind(this);
+    this.handleSelectionProp = this.handleSelectionProp.bind(this);
     this.handleUnitZoom = this.handleUnitZoom.bind(this);
     this.handleCanvasZoom = this.handleCanvasZoom.bind(this);
     this.handleTextureImage = this.handleTextureImage.bind(this);
@@ -46,8 +53,15 @@ class App extends Component {
   getData() {
     fetch('http://localhost:8888/_'+this.state.model+'_'+this.state.dr+'.json')
       .then(response => response.json())
-      .then(data => this.setState({ data: data }));
-  }
+      .then(data => this.setState({
+        data: data,
+        leaves: data.map(d => d.leaf),
+        editions: data.map(d => d.edition),
+        years: data.map(d => d.year),
+        supports: data.map(d => d.support),
+        dims: data.map(d => d.dims),
+      }));
+    }
 
   handlePCA() {
     this.setState({ pca: true, tsne: false, umap: false, dr: 'pca' });
@@ -89,6 +103,10 @@ class App extends Component {
     this.setState(state => ({
       cluster: !this.state.cluster
     }));
+  }
+
+  handleSelectionProp(e) {
+    this.setState({ selectionProp: e.target.value, highlight: true });
   }
 
   handleSelection(e) {
@@ -177,7 +195,23 @@ class App extends Component {
       color: this.state.cluster ? 'black' : stroke
     };
 
-    const editions = Array.from({length: 50}, (_, i) => i + 1);
+    const selectStyle = {
+      backgroundColor: bkgd,
+      color: stroke
+    };
+
+    let selectionOptions = '';
+    if (this.state.selectionProp === 'leaf') {
+      selectionOptions = uniq(this.state.leaves)
+    } else if (this.state.selectionProp === 'edition') {
+      selectionOptions = uniq(this.state.editions)
+    } else if (this.state.selectionProp === 'year') {
+      selectionOptions = uniq(this.state.years)
+    } else if (this.state.selectionProp === 'support') {
+      selectionOptions = uniq(this.state.supports)
+    } else if (this.state.selectionProp === 'dims') {
+      selectionOptions = uniq(this.state.dims)
+    }
 
     return (
       <div className='app'>
@@ -188,6 +222,7 @@ class App extends Component {
             highlight={this.state.highlight}
             cluster={this.state.cluster}
             selection={this.state.selection}
+            selectionProp={this.state.selectionProp}
             zoom={this.state.zoom}
             icon={this.state.icon}
           />
@@ -195,9 +230,15 @@ class App extends Component {
         <div className='upperpanel'>
           <div className='buttonStrip'>
             <button onClick={this.handleHighlight} style={highlightStyle}>HIGHLIGHT</button>
-            <button onClick={this.handleCluster} style={clusterStyle}>CLUSTER</button>
-            <select value={this.state.selection} onChange={this.handleSelection}>
-              {editions.map( (value, i) => {return <option value={value} key={i}>{value}</option>} )}
+            <select style={selectStyle} value={this.state.selectionProp} onChange={this.handleSelectionProp}>
+              <option value='leaf'>leaf</option>
+              <option value='edition'>edition</option>
+              <option value='year'>year</option>
+              <option value='support'>support</option>
+              <option value='dims'>dimensions</option>
+            </select>
+            <select style={selectStyle} value={this.state.selection} onChange={this.handleSelection}>
+              {selectionOptions.map( (value, i) => {return <option value={value} key={i}>{value}</option>} )}
             </select>
           </div>
         </div>
@@ -207,9 +248,10 @@ class App extends Component {
             <button onClick={this.handleCanvasZoom} style={canvasZoomStyle}>CANVAS ZOOM</button>
             <button onClick={this.handleTextureImage} style={textureStyle}>TEXTURE</button>
             <button onClick={this.handlePrintImage} style={printStyle}>PRINT</button>
+            <button onClick={this.handleCluster} style={clusterStyle}>CLUSTER</button>
           </div>
         </div>
-        <div className='panel'>
+        <div className='lowerpanel'>
           <div className='buttonStrip'>
             <button onClick={this.handlePCA} style={pcaStyle}>PCA</button>
             <button onClick={this.handleTSNE} style={tsneStyle}>t-SNE</button>

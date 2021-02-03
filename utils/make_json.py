@@ -31,12 +31,12 @@ print('Computing 2D UMAP embedding...', end=' ')
 mf[['xu','yu']] = norm(umap(X))
 print('[DONE]\n\n')
 
-# clusterfile should always be a single row of cluster assignments
-mf['cluster'] = cf.iloc[:,0]
+for col in cf.columns:
+    mf[col] = cf[col]
 print('Added cluster assignments from',clusterfile)
 
-def row2jso(xf,xcol,ycol,i):
-    row = xf.loc[i]
+def row2jso(mf,xcol,ycol,i):
+    row = mf.loc[i]
     jso = {}
     jso['fullname'] = row.fullname
     jso['leaf'] = row.leaf
@@ -51,7 +51,9 @@ def row2jso(xf,xcol,ycol,i):
     jso['printpath'] = row.printpath
     jso['x'] = row[xcol]
     jso['y'] = row[ycol]
-    jso['cluster'] = int(row.cluster)
+
+    for col in cf.columns:
+        jso[col] = int(row[col])
 
     print(jso)
 

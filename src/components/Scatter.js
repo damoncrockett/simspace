@@ -23,10 +23,13 @@ const yScale = scaleLinear()
               .range([0, plotH]);
 
 const clusterColors = {
-  0: 'rgba(69,222,178,0.5)',
-  1: 'rgba(249,13,160,0.5)',
-  2: 'rgba(171,213,51,0.5)',
-  3: 'rgba(189,108,243,0.5)'
+  0: 'rgba(104,175,252,0.5)',
+  1: 'rgba(70,243,62,0.5)',
+  2: 'rgba(235,94,155,0.5)',
+  3: 'rgba(137,202,87,0.5)',
+  4: 'rgba(219,43,238,0.5)',
+  5: 'rgba(251,209,39,0.5)',
+  6: 'rgba(139,111,237,0.5)'
 };
 
 class Scatter extends Component {
@@ -88,6 +91,10 @@ class Scatter extends Component {
       this.removeHighlight();
     }
 
+    if (prevProps.selection !== this.props.selection && this.props.highlight === true) {
+      this.drawHighlight();
+    }
+
     if (prevProps.cluster !== this.props.cluster && this.props.cluster === true) {
       this.drawCluster();
     }
@@ -96,8 +103,8 @@ class Scatter extends Component {
       this.removeCluster();
     }
 
-    if (prevProps.selection !== this.props.selection && this.props.highlight === true) {
-      this.drawHighlight();
+    if (prevProps.clusterCol !== this.props.clusterCol && this.props.cluster === true) {
+      this.drawCluster();
     }
 
     if (prevProps.zoom !== this.props.zoom) {
@@ -275,7 +282,6 @@ class Scatter extends Component {
 
   drawHighlight() {
     const svgNode = this.svgNode.current;
-
     const highlighted = this.props.data.filter(d => d[this.props.selectionProp] === this.props.selection);
 
     /*
@@ -336,7 +342,6 @@ class Scatter extends Component {
   moveHighlight() {
     const svgNode = this.svgNode.current;
     const transitionSettings = transition().duration(this.props.tduration);
-
     const highlighted = this.props.data.filter(d => d[this.props.selectionProp] === this.props.selection);
 
     if (this.props.zoom === 'unit') {
@@ -362,13 +367,15 @@ class Scatter extends Component {
 
   drawCluster() {
     const svgNode = this.svgNode.current;
+    const transitionSettings = transition().duration(500)
 
-    // No need for update and exit because if they stay, they don't change,
-    // and if they leave, it is via the function below
+    // we only accept cluster labels between 0 and 6
+    const clustered = this.props.data.filter(d => ( d[this.props.clusterCol]) > -1 && d[this.props.clusterCol] < 7 );
+
     select(svgNode)
       .select('g.plotCanvas')
       .selectAll('rect.cluster')
-      .data(this.props.data)
+      .data(clustered)
       .enter()
       .append('rect')
       .attr('class','cluster')
@@ -377,9 +384,30 @@ class Scatter extends Component {
       .attr('height', squareSide )
       .attr('x', d => select('#t' + d.fullname + '_textureImage').attr('x'))
       .attr('y', d => select('#t' + d.fullname + '_textureImage').attr('y'))
-      .attr('fill', d => clusterColors[d.cluster])
+      .attr('fill', d => clusterColors[d[this.props.clusterCol]])
       .on('mouseover', this.handleMouseover)
       .on('mouseout', this.handleMouseout)
+
+    // this update selection is non-empty any time we change
+    // clusterCol, so we need to reset ids, positions, and colors
+    select(svgNode)
+      .select('g.plotCanvas')
+      .selectAll('rect.cluster')
+      .data(clustered)
+      .attr('id', d => 't' + d.fullname + '_cluster')
+      .attr('x', d => select('#t' + d.fullname + '_textureImage').attr('x'))
+      .attr('y', d => select('#t' + d.fullname + '_textureImage').attr('y'))
+      .transition(transitionSettings)
+        .attr('fill', d => clusterColors[d[this.props.clusterCol]])
+
+    // even though we have a remove cluster function below, we still need
+    // this exit selection for changes in clusterCol
+    select(svgNode)
+      .select('g.plotCanvas')
+      .selectAll('rect.cluster')
+      .data(clustered)
+      .exit()
+      .remove()
     }
 
   removeCluster() {
@@ -407,10 +435,12 @@ class Scatter extends Component {
 
     }
 
+    const clustered = this.props.data.filter(d => ( d[this.props.clusterCol]) > -1 && d[this.props.clusterCol] < 7 );
+
     select(svgNode)
       .select('g.plotCanvas')
       .selectAll('rect.cluster')
-      .data(this.props.data)
+      .data(clustered)
       .transition(transitionSettings)
         .attr('x', d => this.updatedxScale(d.x) )
         .attr('y', d => this.updatedyScale(d.y) )

@@ -36,33 +36,7 @@ g {
 	border-style: solid;
 }
 
-.upperpanel {
-  float: left;
-  margin-top: 10px;
-  margin-left: 10px;
-	max-width: 200px;
-	background-color: var(--panel-background);
-	border-radius: 10px;
-	border-color: var(--panel-stroke);
-	border-width: 1px;
-	border-style: solid;
-  text-align: center; /* for centering buttonStrip */
-}
-
-.midpanel {
-  float: left;
-  margin-top: 10px;
-  margin-left: 10px;
-	max-width: 200px;
-	background-color: var(--panel-background);
-	border-radius: 10px;
-	border-color: var(--panel-stroke);
-	border-width: 1px;
-	border-style: solid;
-  text-align: center; /* for centering buttonStrip */
-}
-
-.lowerpanel {
+.highlightPanel, .clusterPanel, .zoomPanel, .iconPanel, .modelPanel, .drPanel {
   float: left;
   margin-top: 10px;
   margin-left: 10px;

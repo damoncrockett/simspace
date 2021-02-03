@@ -24,6 +24,10 @@ class App extends Component {
       tduration: 5000,
       highlight: false,
       cluster: false,
+      clusterModel: 'sp',
+      clusterMethod: 'kmeans',
+      clusterNum: '4',
+      clusterCol: 'sp_kmeans_4',
       selection: '1249_4',
       selectionProp: 'leaf',
       unitzoom: true,
@@ -42,6 +46,9 @@ class App extends Component {
     this.handlePASFA = this.handlePASFA.bind(this);
     this.handleHighlight = this.handleHighlight.bind(this);
     this.handleCluster = this.handleCluster.bind(this);
+    this.handleClusterModel = this.handleClusterModel.bind(this);
+    this.handleClusterMethod = this.handleClusterMethod.bind(this);
+    this.handleClusterNum = this.handleClusterNum.bind(this);
     this.handleSelection = this.handleSelection.bind(this);
     this.handleSelectionProp = this.handleSelectionProp.bind(this);
     this.handleUnitZoom = this.handleUnitZoom.bind(this);
@@ -102,6 +109,30 @@ class App extends Component {
   handleCluster() {
     this.setState(state => ({
       cluster: !this.state.cluster
+    }));
+  }
+
+  handleClusterModel(e) {
+    const clusterModel = e.target.value
+    this.setState(state => ({
+      clusterModel: clusterModel,
+      clusterCol: clusterModel + '_' + this.state.clusterMethod + '_' + this.state.clusterNum
+    }));
+  }
+
+  handleClusterMethod(e) {
+    const clusterMethod = e.target.value
+    this.setState(state => ({
+      clusterMethod: clusterMethod,
+      clusterCol: this.state.clusterModel + '_' + clusterMethod + '_' + this.state.clusterNum
+    }));
+  }
+
+  handleClusterNum(e) {
+    const clusterNum = e.target.value
+    this.setState(state => ({
+      clusterNum: clusterNum,
+      clusterCol: this.state.clusterModel + '_' + this.state.clusterMethod + '_' + clusterNum
     }));
   }
 
@@ -237,14 +268,15 @@ class App extends Component {
             data={this.state.data}
             tduration={this.state.tduration}
             highlight={this.state.highlight}
-            cluster={this.state.cluster}
             selection={this.state.selection}
             selectionProp={this.state.selectionProp}
+            cluster={this.state.cluster}
+            clusterCol={this.state.clusterCol}
             zoom={this.state.zoom}
             icon={this.state.icon}
           />
         </div>
-        <div className='upperpanel'>
+        <div className='highlightPanel'>
           <div className='buttonStrip'>
             <button onClick={this.handleHighlight} style={highlightStyle}>HIGHLIGHT</button>
             <select style={selectStyle} value={this.state.selectionProp} onChange={this.handleSelectionProp}>
@@ -259,25 +291,53 @@ class App extends Component {
             </select>
           </div>
         </div>
-        <div className='midpanel'>
+        <div className='clusterPanel'>
           <div className='buttonStrip'>
-            <button onClick={this.handleUnitZoom} style={unitZoomStyle}>UNIT ZOOM</button>
-            <button onClick={this.handleCanvasZoom} style={canvasZoomStyle}>CANVAS ZOOM</button>
-            <button onClick={this.handleTextureImage} style={textureStyle}>TEXTURE</button>
-            <button onClick={this.handlePrintImage} style={printStyle}>PRINT</button>
             <button onClick={this.handleCluster} style={clusterStyle}>CLUSTER</button>
+            <select style={selectStyle} value={this.state.clusterModel} onChange={this.handleClusterModel}>
+              <option value='sp'>SP</option>
+              <option value='pasfa'>PASFA</option>
+            </select>
+            <select style={selectStyle} value={this.state.clusterMethod} onChange={this.handleClusterMethod}>
+              <option value='kmeans'>k-means</option>
+              <option value='hierarchical'>hierarchical</option>
+              <option value='spectral'>spectral</option>
+            </select>
+            <select style={selectStyle} value={this.state.clusterNum} onChange={this.handleClusterNum}>
+              <option value='2'>2</option>
+              <option value='3'>3</option>
+              <option value='4'>4</option>
+              <option value='5'>5</option>
+              <option value='6'>6</option>
+              <option value='7'>7</option>
+            </select>
           </div>
         </div>
-        <div className='lowerpanel'>
+        <div className='zoomPanel'>
+          <div className='buttonStrip'>
+            <button onClick={this.handleUnitZoom} style={unitZoomStyle}>ZOOM</button>
+            <button onClick={this.handleCanvasZoom} style={canvasZoomStyle}>SPREAD</button>
+          </div>
+        </div>
+        <div className='iconPanel'>
+          <div className='buttonStrip'>
+            <button onClick={this.handleTextureImage} style={textureStyle}>TEXTURE</button>
+            <button onClick={this.handlePrintImage} style={printStyle}>DRAWING</button>
+          </div>
+        </div>
+        <div className='drPanel'>
           <div className='buttonStrip'>
             <button onClick={this.handlePCA} style={pcaStyle}>PCA</button>
             <button onClick={this.handleTSNE} style={tsneStyle}>t-SNE</button>
             <button onClick={this.handleUMAP} style={umapStyle}>UMAP</button>
+          </div>
+        </div>
+        <div className='modelPanel'>
+          <div className='buttonStrip'>
             <button onClick={this.handleSP} style={spStyle}>SP</button>
             <button onClick={this.handlePASFA} style={pasfaStyle}>PASFA</button>
           </div>
         </div>
-
       </div>
     );
   }

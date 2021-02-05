@@ -21,15 +21,14 @@ mf = pd.read_csv(masterfile)
 X = pd.read_csv(modelfile)
 cf = pd.read_csv(clusterfile)
 
-print('Computing 2D PCA coordinates...', end=' ')
+print('Computing 2D PCA coordinates...')
 mf[['xp','yp']] = norm(pca(X,n_components=2))
-print('[DONE]')
-print('Computing 2D t-SNE embedding...', end=' ')
-mf[['xt','yt']] = norm(tsne(X))
-print('[DONE]')
-print('Computing 2D UMAP embedding...', end=' ')
+
+print('Computing 2D t-SNE embedding...')
+mf[['xt','yt']] = norm(tsne(X,init='pca')) # n.b.: pca initialization
+
+print('Computing 2D UMAP embedding...')
 mf[['xu','yu']] = norm(umap(X))
-print('[DONE]\n\n')
 
 for col in cf.columns:
     mf[col] = cf[col]

@@ -23,13 +23,13 @@ const yScale = scaleLinear()
               .range([0, plotH]);
 
 const clusterColors = {
-  0: 'rgba(104,175,252,0.5)',
-  1: 'rgba(70,243,62,0.5)',
-  2: 'rgba(235,94,155,0.5)',
-  3: 'rgba(137,202,87,0.5)',
-  4: 'rgba(219,43,238,0.5)',
-  5: 'rgba(251,209,39,0.5)',
-  6: 'rgba(139,111,237,0.5)'
+  0: 'rgba(255,0,0,0.5)', //red
+  1: 'rgba(0,255,0,0.5)', //green
+  2: 'rgba(0,0,255,0.5)', //blue
+  3: 'rgba(255,255,0,0.5)', //yellow
+  4: 'rgba(255,165,0,0.5)', //orange
+  5: 'rgba(160,32,240,0.5)', //purple
+  6: 'rgba(255,0,255,0.5)' //magenta
 };
 
 class Scatter extends Component {
@@ -166,7 +166,7 @@ class Scatter extends Component {
       );
     } else if (this.props.zoom === 'canvas'){
 
-      // n.b.: we don't store the margin adjustment, bc we add it above every time
+      // n.b.: we don't store the margin adjustment, bc we add it every time
       this.setState({ unitMarker: zoomTransform(svgNode) }, function () {
           select(svgNode).call(zoom().transform, this.state.canvasMarker);
         }
@@ -367,10 +367,11 @@ class Scatter extends Component {
 
   drawCluster() {
     const svgNode = this.svgNode.current;
+    // quick transition; slower transitions were more confusing here
     const transitionSettings = transition().duration(500)
 
     // we only accept cluster labels between 0 and 6
-    const clustered = this.props.data.filter(d => ( d[this.props.clusterCol]) > -1 && d[this.props.clusterCol] < 7 );
+    const clustered = this.props.clusterFillData.filter(d => ( d[this.props.clusterFillCol]) > -1 && d[this.props.clusterFillCol] < 7 );
 
     select(svgNode)
       .select('g.plotCanvas')
@@ -384,7 +385,7 @@ class Scatter extends Component {
       .attr('height', squareSide )
       .attr('x', d => select('#t' + d.fullname + '_textureImage').attr('x'))
       .attr('y', d => select('#t' + d.fullname + '_textureImage').attr('y'))
-      .attr('fill', d => clusterColors[d[this.props.clusterCol]])
+      .attr('fill', d => clusterColors[d[this.props.clusterFillCol]])
       .on('mouseover', this.handleMouseover)
       .on('mouseout', this.handleMouseout)
 
@@ -398,7 +399,7 @@ class Scatter extends Component {
       .attr('x', d => select('#t' + d.fullname + '_textureImage').attr('x'))
       .attr('y', d => select('#t' + d.fullname + '_textureImage').attr('y'))
       .transition(transitionSettings)
-        .attr('fill', d => clusterColors[d[this.props.clusterCol]])
+        .attr('fill', d => clusterColors[d[this.props.clusterFillCol]])
 
     // even though we have a remove cluster function below, we still need
     // this exit selection for changes in clusterCol
@@ -435,6 +436,8 @@ class Scatter extends Component {
 
     }
 
+    // Here, we don't use clusterFillData because we need the x and y coords from
+    // the new data file
     const clustered = this.props.data.filter(d => ( d[this.props.clusterCol]) > -1 && d[this.props.clusterCol] < 7 );
 
     select(svgNode)

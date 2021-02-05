@@ -12,6 +12,7 @@ class App extends Component {
       tsne: true,
       umap: false,
       data: null,
+      clusterFillData: null,
       leaves: [''],
       editions: [''],
       years: [''],
@@ -28,6 +29,7 @@ class App extends Component {
       clusterMethod: 'kmeans',
       clusterNum: '4',
       clusterCol: 'sp_kmeans_4',
+      clusterFillCol: 'sp_kmeans_3__sp_kmeans_4',
       selection: '1249_4',
       selectionProp: 'leaf',
       unitzoom: true,
@@ -39,6 +41,7 @@ class App extends Component {
     };
 
     this.getData = this.getData.bind(this);
+    this.getClusterFillData = this.getClusterFillData.bind(this);
     this.handlePCA = this.handlePCA.bind(this);
     this.handleTSNE = this.handleTSNE.bind(this);
     this.handleUMAP = this.handleUMAP.bind(this);
@@ -67,6 +70,14 @@ class App extends Component {
         years: uniq(data.map(d => d.year)).sort(),
         supports: uniq(data.map(d => d.support)).sort(),
         dims: uniq(data.map(d => d.dims)).sort(),
+      }));
+    }
+
+  getClusterFillData() {
+    fetch('http://localhost:8888/__clusterfills.json')
+      .then(response => response.json())
+      .then(data => this.setState({
+        clusterFillData: data
       }));
     }
 
@@ -116,7 +127,8 @@ class App extends Component {
     const clusterModel = e.target.value
     this.setState(state => ({
       clusterModel: clusterModel,
-      clusterCol: clusterModel + '_' + this.state.clusterMethod + '_' + this.state.clusterNum
+      clusterCol: clusterModel + '_' + this.state.clusterMethod + '_' + this.state.clusterNum,
+      clusterFillCol: this.state.clusterFillCol.split('__')[1] + '__' + clusterModel + '_' + this.state.clusterMethod + '_' + this.state.clusterNum
     }));
   }
 
@@ -124,7 +136,8 @@ class App extends Component {
     const clusterMethod = e.target.value
     this.setState(state => ({
       clusterMethod: clusterMethod,
-      clusterCol: this.state.clusterModel + '_' + clusterMethod + '_' + this.state.clusterNum
+      clusterCol: this.state.clusterModel + '_' + clusterMethod + '_' + this.state.clusterNum,
+      clusterFillCol: this.state.clusterFillCol.split('__')[1] + '__' + this.state.clusterModel + '_' + clusterMethod + '_' + this.state.clusterNum
     }));
   }
 
@@ -132,7 +145,8 @@ class App extends Component {
     const clusterNum = e.target.value
     this.setState(state => ({
       clusterNum: clusterNum,
-      clusterCol: this.state.clusterModel + '_' + this.state.clusterMethod + '_' + clusterNum
+      clusterCol: this.state.clusterModel + '_' + this.state.clusterMethod + '_' + clusterNum,
+      clusterFillCol: this.state.clusterFillCol.split('__')[1] + '__' + this.state.clusterModel + '_' + this.state.clusterMethod + '_' + clusterNum
     }));
   }
 
@@ -171,6 +185,7 @@ class App extends Component {
 
   componentDidMount() {
     this.getData();
+    this.getClusterFillData();
   }
 
   componentDidUpdate(prevProps, prevState) {
@@ -266,12 +281,14 @@ class App extends Component {
         <div className='field'>
           <Scatter
             data={this.state.data}
+            clusterFillData={this.state.clusterFillData}
             tduration={this.state.tduration}
             highlight={this.state.highlight}
             selection={this.state.selection}
             selectionProp={this.state.selectionProp}
             cluster={this.state.cluster}
             clusterCol={this.state.clusterCol}
+            clusterFillCol={this.state.clusterFillCol}
             zoom={this.state.zoom}
             icon={this.state.icon}
           />

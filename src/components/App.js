@@ -61,7 +61,8 @@ class App extends Component {
   }
 
   getData() {
-    fetch('http://localhost:8888/_'+this.state.model+'_'+this.state.dr+'.json')
+    //fetch('http://localhost:8888/_'+this.state.model+'_'+this.state.dr+'.json')
+    fetch('_'+this.state.model+'_'+this.state.dr+'.json')
       .then(response => response.json())
       .then(data => this.setState({
         data: data,
@@ -74,7 +75,8 @@ class App extends Component {
     }
 
   getClusterFillData() {
-    fetch('http://localhost:8888/__clusterfills.json')
+    //fetch('http://localhost:8888/__clusterfills.json')
+    fetch('__clusterfills.json')
       .then(response => response.json())
       .then(data => this.setState({
         clusterFillData: data

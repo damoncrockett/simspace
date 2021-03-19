@@ -1,5 +1,6 @@
 .DS_Store
 node_modules
+dist
 src/assets/json/img
 src/assets/json/prints
 utils/__pycache__

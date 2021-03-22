@@ -5,6 +5,9 @@ import { zoom, zoomIdentity, zoomTransform } from 'd3-zoom';
 import { scaleLinear } from 'd3-scale';
 
 const screenH = window.screen.height * window.devicePixelRatio;
+const screenW = window.screen.width * window.devicePixelRatio;
+console.log(screenW);
+console.log(screenH);
 const marginInt = Math.round( screenH / 45 );
 const margin = {top: marginInt, right: marginInt, bottom: marginInt, left: marginInt};
 const plotH = Math.round( screenH / 3 );

@@ -6,7 +6,8 @@
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1",
     "build": "webpack --mode production",
-    "start": "webpack serve --hot --mode development"
+    "start": "webpack serve --hot --mode development",
+    "deploy":"aws s3 sync ~/simspace/dist/ s3://ipch.app/simspace/"
   },
   "repository": {
     "type": "git",

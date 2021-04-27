@@ -19,7 +19,6 @@ g {
 
 .fieldPlot {
 	float: left;
-	max-width: 1200px;
   border-radius: 10px;
 	border-color: var(--panel-stroke);
 	border-width: 1px;
@@ -40,7 +39,7 @@ g {
   float: left;
   margin-top: 10px;
   margin-left: 10px;
-	max-width: 200px;
+	max-width: 250px;
 	background-color: var(--panel-background);
 	border-radius: 10px;
 	border-color: var(--panel-stroke);

@@ -18,6 +18,21 @@ class App extends Component {
       years: [''],
       supports: [''],
       dims: [''],
+      suffixes: [''],
+      sides: [''],
+      lightangles: [''],
+      portraits: [''],
+      leafsides: [''],
+      leaflightangles: [''],
+      suffixportraits: [''],
+      rvportraits: [''],
+      editionportraits: [''],
+      editionsuffixes: [''],
+      editionsuffixportraits: [''],
+      editionsides: [''],
+      editionsideportraits: [''],
+      editionlightangles: [''],
+      editionlightangleportraits: [''],
       dr: 'tsne',
       sp: true,
       pasfa: false,
@@ -41,6 +56,7 @@ class App extends Component {
     };
 
     this.getData = this.getData.bind(this);
+    this.getNewCoords = this.getNewCoords.bind(this);
     this.getClusterFillData = this.getClusterFillData.bind(this);
     this.handlePCA = this.handlePCA.bind(this);
     this.handleTSNE = this.handleTSNE.bind(this);
@@ -71,6 +87,30 @@ class App extends Component {
         years: uniq(data.map(d => d.year)).sort(),
         supports: uniq(data.map(d => d.support)).sort(),
         dims: uniq(data.map(d => d.dims)).sort(),
+        suffixes: uniq(data.map(d => d.suffix)).sort(),
+        sides: uniq(data.map(d => d.side)).sort(),
+        lightangles: uniq(data.map(d => d.lightangle)).sort(),
+        portraits: uniq(data.map(d => d.portrait)).sort(),
+        leafsides: uniq(data.map(d => d.leafside)).sort(),
+        leaflightangles: uniq(data.map(d => d.leaflightangle)).sort(),
+        suffixportraits: uniq(data.map(d => d.suffixportrait)).sort(),
+        rvportraits: uniq(data.map(d => d.rvportrait)).sort(),
+        editionportraits: uniq(data.map(d => d.editionportrait)).sort(),
+        editionsuffixes: uniq(data.map(d => d.editionsuffix)).sort(),
+        editionsuffixportraits: uniq(data.map(d => d.editionsuffixportrait)).sort(),
+        editionsides: uniq(data.map(d => d.editionside)).sort(),
+        editionsideportraits: uniq(data.map(d => d.editionsideportrait)).sort(),
+        editionlightangles: uniq(data.map(d => d.editionlightangle)).sort(),
+        editionlightangleportraits: uniq(data.map(d => d.editionlightangleportrait)).sort()
+      }));
+    }
+
+  getNewCoords() {
+    //fetch('http://localhost:8888/_'+this.state.model+'_'+this.state.dr+'.json')
+    fetch('_'+this.state.model+'_'+this.state.dr+'.json')
+      .then(response => response.json())
+      .then(data => this.setState({
+        data: data,
       }));
     }
 
@@ -168,6 +208,36 @@ class App extends Component {
       newSelection = this.state.supports[0]
     } else if (selectionProp === 'dims') {
       newSelection = this.state.dims[0]
+    } else if (selectionProp === 'suffix') {
+      newSelection = this.state.suffixes[0]
+    } else if (selectionProp === 'side') {
+      newSelection = this.state.sides[0]
+    } else if (selectionProp === 'lightangle') {
+      newSelection = this.state.lightangles[0]
+    } else if (selectionProp === 'portrait') {
+      newSelection = this.state.portraits[0]
+    } else if (selectionProp === 'leafside') {
+      newSelection = this.state.leafsides[0]
+    } else if (selectionProp === 'leaflightangle') {
+      newSelection = this.state.leaflightangles[0]
+    } else if (selectionProp === 'suffixportrait') {
+      newSelection = this.state.suffixportraits[0]
+    } else if (selectionProp === 'rvportrait') {
+      newSelection = this.state.rvportraits[0]
+    } else if (selectionProp === 'editionportrait') {
+      newSelection = this.state.editionportraits[0]
+    } else if (selectionProp === 'editionsuffix') {
+      newSelection = this.state.editionsuffixes[0]
+    } else if (selectionProp === 'editionsuffixportrait') {
+      newSelection = this.state.editionsuffixportraits[0]
+    } else if (selectionProp === 'editionside') {
+      newSelection = this.state.editionsides[0]
+    } else if (selectionProp === 'editionsideportrait') {
+      newSelection = this.state.editionsideportraits[0]
+    } else if (selectionProp === 'editionlightangle') {
+      newSelection = this.state.editionlightangles[0]
+    } else if (selectionProp === 'editionlightangleportrait') {
+      newSelection = this.state.editionlightangleportraits[0]
     }
 
     this.setState({ selectionProp: e.target.value, selection: newSelection });
@@ -193,11 +263,11 @@ class App extends Component {
   componentDidUpdate(prevProps, prevState) {
     // conditional prevents infinite loop from render to cDU
     if (prevState.model !== this.state.model) {
-      this.getData();
+      this.getNewCoords();
     }
 
     if (prevState.dr !== this.state.dr) {
-      this.getData();
+      this.getNewCoords();
     }
   }
 
@@ -276,6 +346,36 @@ class App extends Component {
       selectionOptions = this.state.supports
     } else if (this.state.selectionProp === 'dims') {
       selectionOptions = this.state.dims
+    } else if (this.state.selectionProp === 'suffix') {
+      selectionOptions = this.state.suffixes
+    } else if (this.state.selectionProp === 'side') {
+      selectionOptions = this.state.sides
+    } else if (this.state.selectionProp === 'lightangle') {
+      selectionOptions = this.state.lightangles
+    } else if (this.state.selectionProp === 'portrait') {
+      selectionOptions = this.state.portraits
+    } else if (this.state.selectionProp === 'leafside') {
+      selectionOptions = this.state.leafsides
+    } else if (this.state.selectionProp === 'leaflightangle') {
+      selectionOptions = this.state.leaflightangles
+    } else if (this.state.selectionProp === 'suffixportrait') {
+      selectionOptions = this.state.suffixportraits
+    } else if (this.state.selectionProp === 'rvportrait') {
+      selectionOptions = this.state.rvportraits
+    } else if (this.state.selectionProp === 'editionportrait') {
+      selectionOptions = this.state.editionportraits
+    } else if (this.state.selectionProp === 'editionsuffix') {
+      selectionOptions = this.state.editionsuffixes
+    } else if (this.state.selectionProp === 'editionsuffixportrait') {
+      selectionOptions = this.state.editionsuffixportraits
+    } else if (this.state.selectionProp === 'editionside') {
+      selectionOptions = this.state.editionsides
+    } else if (this.state.selectionProp === 'editionsideportrait') {
+      selectionOptions = this.state.editionsideportraits
+    } else if (this.state.selectionProp === 'editionlightangle') {
+      selectionOptions = this.state.editionlightangles
+    } else if (this.state.selectionProp === 'editionlightangleportrait') {
+      selectionOptions = this.state.editionlightangleportraits
     }
 
     return (
@@ -304,6 +404,21 @@ class App extends Component {
               <option value='year'>year</option>
               <option value='support'>support</option>
               <option value='dims'>dimensions</option>
+              <option value='suffix'>suffix</option>
+              <option value='side'>side</option>
+              <option value='lightangle'>light angle</option>
+              <option value='portrait'>orientation</option>
+              <option value='leafside'>leafside</option>
+              <option value='leaflightangle'>leaf light angle</option>
+              <option value='suffixportrait'>suffix orientation</option>
+              <option value='rvportrait'>side orientation</option>
+              <option value='editionportrait'>edition orientation</option>
+              <option value='editionsuffix'>edition suffix</option>
+              <option value='editionsuffixportrait'>edition suffix orientation</option>
+              <option value='editionside'>edition side</option>
+              <option value='editionsideportrait'>edition side orientation</option>
+              <option value='editionlightangle'>edition light angle</option>
+              <option value='editionlightangleportrait'>edition light angle orientation</option>
             </select>
             <select style={selectStyle} value={this.state.selection} onChange={this.handleSelection}>
               {selectionOptions.map( (value, i) => {return <option value={value} key={i}>{value}</option>} )}

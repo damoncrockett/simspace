@@ -4,13 +4,13 @@ import { transition } from 'd3-transition';
 import { zoom, zoomIdentity, zoomTransform } from 'd3-zoom';
 import { scaleLinear } from 'd3-scale';
 
-const screenH = window.screen.height * window.devicePixelRatio;
-const screenW = window.screen.width * window.devicePixelRatio;
+const screenH = window.innerHeight * window.devicePixelRatio;
+const screenW = window.innerWidth * window.devicePixelRatio;
 console.log(screenW);
 console.log(screenH);
 const marginInt = Math.round( screenH / 45 );
 const margin = {top: marginInt, right: marginInt, bottom: marginInt, left: marginInt};
-const plotH = Math.round( screenH / 3 );
+const plotH = Math.round( screenH / 2 );
 const plotW = plotH;
 const svgW = plotW + margin.left + margin.right;
 const svgH = plotH + margin.top + margin.bottom;
@@ -574,8 +574,8 @@ class Scatter extends Component {
         <div className='fieldPanel'>
           <svg
           ref={this.svgPanel}
-          width={svgW}
-          height={svgH}
+          width={svgW/2}
+          height={svgH/2}
           />
         </div>
       </div>

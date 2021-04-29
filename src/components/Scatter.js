@@ -10,11 +10,11 @@ console.log(screenW);
 console.log(screenH);
 const marginInt = Math.round( screenH / 45 );
 const margin = {top: marginInt, right: marginInt, bottom: marginInt, left: marginInt};
-const plotH = Math.round( screenH / 2 );
+const plotH = Math.round( screenH / 2.25 );
 const plotW = plotH;
 const svgW = plotW + margin.left + margin.right;
 const svgH = plotH + margin.top + margin.bottom;
-const squareSide = Math.round( screenH / 60 );
+const squareSide = Math.round( screenH / 64 );
 
 // this works bc all data is normalized ahead of time
 const xScaleScatter = scaleLinear()
@@ -58,8 +58,10 @@ class Scatter extends Component {
 
     this.drawSVG = this.drawSVG.bind(this);
     this.drawScatter = this.drawScatter.bind(this);
+    this.drawIcon = this.drawIcon.bind(this);
     this.moveScatter = this.moveScatter.bind(this);
     this.handleNN = this.handleNN.bind(this);
+    this.drawNNtarget = this.drawNNtarget.bind(this);
     this.drawHighlight = this.drawHighlight.bind(this);
     this.removeHighlight = this.removeHighlight.bind(this);
     this.moveHighlight = this.moveHighlight.bind(this);
@@ -97,6 +99,14 @@ class Scatter extends Component {
 
     if (prevProps.data !== null && prevProps.data !== this.props.data) {
       this.moveScatter();
+    }
+
+    if (prevProps.data !== null && prevProps.data !== this.props.data && this.props.nnToggle === true ) {
+      this.drawNNtarget();
+    }
+
+    if (prevProps.data !== null && prevProps.data !== this.props.data && this.props.nnToggle === false ) {
+      this.removeNNtarget();
     }
 
     if (prevProps.data !== null && prevProps.data !== this.props.data && this.props.highlight === true) {
@@ -142,7 +152,7 @@ class Scatter extends Component {
     }
 
     if (prevProps.icon !== this.props.icon) {
-      this.drawScatter();
+      this.drawIcon();
     }
   }
 
@@ -267,6 +277,14 @@ class Scatter extends Component {
         .data(data)
         .attr('x', d => this.updatedxScale(d.x) )
         .attr('y', d => this.updatedyScale(d.y) )
+
+
+      select(svgNode)
+        .select('g.plotCanvas')
+        .selectAll('rect.target')
+        .attr('x', this.updatedxScale(15) )
+        .attr('y', this.updatedyScale(15) )
+
     }
   }
 
@@ -311,6 +329,17 @@ class Scatter extends Component {
       .attr('y', d => yScale(d.y) )
 
     // does nothing unless 'icon' has changed
+    select(svgNode)
+      .select('g.plotCanvas')
+      .selectAll('image')
+      .data(this.props.data)
+      //.attr('xlink:href', d => "http://localhost:8888/" + d[this.props.icon] )
+      .attr('xlink:href', d => d[this.props.icon] )
+    }
+
+  drawIcon() {
+    const svgNode = this.svgNode.current;
+
     select(svgNode)
       .select('g.plotCanvas')
       .selectAll('image')
@@ -365,8 +394,6 @@ class Scatter extends Component {
 
   handleNN(e, d) {
 
-    console.log(d);
-
     // if you click on an image when nn mode is off, nothing happens
     if ( this.props.nnToggle===true ) {
 
@@ -376,6 +403,49 @@ class Scatter extends Component {
         .then(data => this.setState({ nn: data }))
 
     }
+  }
+
+  drawNNtarget() {
+
+    const svgNode = this.svgNode.current;
+
+    let xScale = '';
+    let yScale = '';
+
+    if ( this.props.nnToggle===false ) {
+      xScale = xScaleScatter;
+      yScale = yScaleScatter;
+    } else if ( this.props.nnToggle===true ) {
+      xScale = xScaleNN;
+      yScale = yScaleNN;
+    }
+
+    select(svgNode)
+      .select('g.plotCanvas')
+      .selectAll('rect.target')
+      .data([0])
+      .enter()
+      .append('rect')
+      .attr('class', 'target')
+      .attr('id', 'NNtarget')
+      .attr('width', squareSide )
+      .attr('height', squareSide )
+      .attr('x', xScale(15) )
+      .attr('y', yScale(15) )
+      .attr('stroke', 'magenta')
+      .attr('stroke-width', 4)
+      .attr('fill', 'none')
+
+  }
+
+  removeNNtarget() {
+
+    const svgNode = this.svgNode.current;
+
+    select(svgNode)
+      .select('g.plotCanvas')
+      .selectAll('rect.target')
+      .remove()
   }
 
   drawHighlight() {

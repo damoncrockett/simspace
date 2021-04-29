@@ -406,6 +406,7 @@ class App extends Component {
             clusterFillCol={this.state.clusterFillCol}
             zoom={this.state.zoom}
             icon={this.state.icon}
+            model={this.state.model}
           />
         </div>
         <div className='highlightPanel'>

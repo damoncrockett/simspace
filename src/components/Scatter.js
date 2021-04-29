@@ -53,7 +53,8 @@ class Scatter extends Component {
       canvasMarker: zoomIdentity,
       nn: null,
       highlightIdxs: null,
-      clusterIdxs: null
+      clusterIdxs: null,
+      nnTarget: '1249_4_rr'
     };
 
     this.drawSVG = this.drawSVG.bind(this);
@@ -61,6 +62,7 @@ class Scatter extends Component {
     this.drawIcon = this.drawIcon.bind(this);
     this.moveScatter = this.moveScatter.bind(this);
     this.handleNN = this.handleNN.bind(this);
+    this.handleNNnoClick = this.handleNNnoClick.bind(this);
     this.drawNNtarget = this.drawNNtarget.bind(this);
     this.drawHighlight = this.drawHighlight.bind(this);
     this.removeHighlight = this.removeHighlight.bind(this);
@@ -80,7 +82,7 @@ class Scatter extends Component {
     this.drawSVG();
 
     //fetch('http://localhost:8888/nn/1249_4_rr.json')
-    fetch('nn/1249_4_rr.json')
+    fetch('nn/1249_4_rr_sp.json')
       .then(response => response.json())
       .then(data => this.setState({
         nn: data
@@ -97,8 +99,12 @@ class Scatter extends Component {
       this.drawScatter();
     }
 
-    if (prevProps.data !== null && prevProps.data !== this.props.data) {
+    if (prevProps.data !== null && prevProps.data !== this.props.data && this.props.nnToggle === false ) {
       this.moveScatter();
+    }
+
+    if (prevProps.data !== null && prevProps.data !== this.props.data && this.props.nnToggle === true ) {
+      this.handleNNnoClick();
     }
 
     if (prevProps.data !== null && prevProps.data !== this.props.data && this.props.nnToggle === true ) {
@@ -109,12 +115,20 @@ class Scatter extends Component {
       this.removeNNtarget();
     }
 
-    if (prevProps.data !== null && prevProps.data !== this.props.data && this.props.highlight === true) {
+    if (prevProps.data !== null && prevProps.data !== this.props.data && this.props.highlight === true && this.props.nnToggle === false ) {
       this.moveHighlight();
     }
 
-    if (prevProps.data !== null && prevProps.data !== this.props.data && this.props.cluster === true) {
+    if (prevProps.data !== null && prevProps.data !== this.props.data && this.props.highlight === true && this.props.nnToggle === true ) {
+      this.handleNNnoClick();
+    }
+
+    if (prevProps.data !== null && prevProps.data !== this.props.data && this.props.cluster === true && this.props.nnToggle === false ) {
       this.moveCluster();
+    }
+
+    if (prevProps.data !== null && prevProps.data !== this.props.data && this.props.cluster === true && this.props.nnToggle === true ) {
+      this.handleNNnoClick();
     }
 
     if (prevState.nn !== null && prevState.nn !== this.state.nn ) {
@@ -253,7 +267,16 @@ class Scatter extends Component {
       this.updatedyScale = e.transform.rescaleY(yScale);
 
       // needed for moving the correct highlights
-      const highlighted = data.filter(d => d.fullname === this.state.highlightIdxs);
+      let highlighted = [];
+      if ( this.state.highlightIdxs !== null ) {
+        highlighted = data.filter(d => this.state.highlightIdxs.includes(d.fullname))
+      }
+
+      // not necessary for now, but with non-exhaustive clusters it is
+      let clustered = [];
+      if ( this.state.clusterIdxs !== null ) {
+        clustered = data.filter(d => this.state.clusterIdxs.includes(d.fullname))
+      }
 
       // rescale x and y domains (above) then apply to all visible elements below
       select(svgNode)
@@ -274,7 +297,7 @@ class Scatter extends Component {
       select(svgNode)
         .select('g.plotCanvas')
         .selectAll('rect.cluster')
-        .data(data)
+        .data(clustered)
         .attr('x', d => this.updatedxScale(d.x) )
         .attr('y', d => this.updatedyScale(d.y) )
 
@@ -397,12 +420,21 @@ class Scatter extends Component {
     // if you click on an image when nn mode is off, nothing happens
     if ( this.props.nnToggle===true ) {
 
-      //fetch('http://localhost:8888/nn/' + d.fullname + '.json')
-      fetch('nn/' + d.fullname + '.json')
-        .then(response => response.json())
-        .then(data => this.setState({ nn: data }))
-
+      this.setState({ nnTarget:  d.fullname }, function() {
+        //fetch('http://localhost:8888/nn/' + d.fullname + '_' + this.props.model + '.json')
+        fetch('nn/' + d.fullname + '_' + this.props.model + '.json')
+          .then(response => response.json())
+          .then(data => this.setState({ nn: data }))
+      });
     }
+  }
+
+  handleNNnoClick() {
+
+    //fetch('http://localhost:8888/nn/' + this.state.nnTarget + '_' + this.props.model + '.json')
+    fetch('nn/' + this.state.nnTarget + '_' + this.props.model + '.json')
+      .then(response => response.json())
+      .then(data => this.setState({ nn: data }))
   }
 
   drawNNtarget() {
@@ -420,6 +452,19 @@ class Scatter extends Component {
       yScale = yScaleNN;
     }
 
+    // we must know whether we've canvas zoomed in order to draw the target
+    if (this.props.zoom === 'unit') {
+
+      this.updatedxScale = this.state.canvasMarker.rescaleX(xScale);
+      this.updatedyScale = this.state.canvasMarker.rescaleY(yScale);
+
+    } else if (this.props.zoom === 'canvas') {
+
+      this.updatedxScale = zoomTransform(svgNode).rescaleX(xScale);
+      this.updatedyScale = zoomTransform(svgNode).rescaleY(yScale);
+    }
+
+
     select(svgNode)
       .select('g.plotCanvas')
       .selectAll('rect.target')
@@ -430,8 +475,8 @@ class Scatter extends Component {
       .attr('id', 'NNtarget')
       .attr('width', squareSide )
       .attr('height', squareSide )
-      .attr('x', xScale(15) )
-      .attr('y', yScale(15) )
+      .attr('x', this.updatedxScale(15) )
+      .attr('y', this.updatedyScale(15) )
       .attr('stroke', 'magenta')
       .attr('stroke-width', 4)
       .attr('fill', 'none')

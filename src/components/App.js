@@ -12,6 +12,7 @@ class App extends Component {
       tsne: true,
       umap: false,
       data: null,
+      nnToggle: false,
       clusterFillData: null,
       leaves: [''],
       editions: [''],
@@ -61,6 +62,7 @@ class App extends Component {
     this.handlePCA = this.handlePCA.bind(this);
     this.handleTSNE = this.handleTSNE.bind(this);
     this.handleUMAP = this.handleUMAP.bind(this);
+    this.handleNN = this.handleNN.bind(this);
     this.handleSP = this.handleSP.bind(this);
     this.handlePASFA = this.handlePASFA.bind(this);
     this.handleHighlight = this.handleHighlight.bind(this);
@@ -124,15 +126,20 @@ class App extends Component {
     }
 
   handlePCA() {
-    this.setState({ pca: true, tsne: false, umap: false, dr: 'pca' });
+    this.setState({ pca: true, tsne: false, umap: false, dr: 'pca', nnToggle: false });
   }
 
   handleTSNE() {
-    this.setState({ pca: false, tsne: true, umap: false, dr: 'tsne' });
+    this.setState({ pca: false, tsne: true, umap: false, dr: 'tsne', nnToggle: false });
   }
 
   handleUMAP() {
-    this.setState({ pca: false, tsne: false, umap: true, dr: 'umap' });
+    this.setState({ pca: false, tsne: false, umap: true, dr: 'umap', nnToggle: false });
+  }
+
+  // the 'dummy' file is actually the tsne file, but we don't use its xy coords in Scatter
+  handleNN() {
+    this.setState({ pca: false, tsne: false, umap: false, dr: 'dummy', nnToggle: true });
   }
 
   handleSP() {
@@ -300,6 +307,11 @@ class App extends Component {
       color: this.state.umap ? 'black' : stroke
     };
 
+    const nnStyle = {
+      backgroundColor: this.state.nnToggle ? 'white' : bkgd,
+      color: this.state.nnToggle ? 'black' : stroke
+    };
+
     const spStyle = {
       backgroundColor: this.state.sp ? 'white' : bkgd,
       color: this.state.sp ? 'black' : stroke
@@ -383,6 +395,7 @@ class App extends Component {
         <div className='field'>
           <Scatter
             data={this.state.data}
+            nnToggle={this.state.nnToggle}
             clusterFillData={this.state.clusterFillData}
             tduration={this.state.tduration}
             highlight={this.state.highlight}
@@ -464,6 +477,7 @@ class App extends Component {
             <button onClick={this.handlePCA} style={pcaStyle}>PCA</button>
             <button onClick={this.handleTSNE} style={tsneStyle}>t-SNE</button>
             <button onClick={this.handleUMAP} style={umapStyle}>UMAP</button>
+            <button onClick={this.handleNN} style={nnStyle}>NN</button>
           </div>
         </div>
         <div className='modelPanel'>

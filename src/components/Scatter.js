@@ -14,15 +14,24 @@ const plotH = Math.round( screenH / 2 );
 const plotW = plotH;
 const svgW = plotW + margin.left + margin.right;
 const svgH = plotH + margin.top + margin.bottom;
-const squareSide = Math.round( screenH / 120 );
+const squareSide = Math.round( screenH / 60 );
 
 // this works bc all data is normalized ahead of time
-const xScale = scaleLinear()
+const xScaleScatter = scaleLinear()
               .domain([0, 1])
               .range([0, plotW]);
 
-const yScale = scaleLinear()
+const yScaleScatter = scaleLinear()
               .domain([0, 1])
+              .range([0, plotH]);
+
+// this uses the max grid coord values
+const xScaleNN = scaleLinear()
+              .domain([0, 29])
+              .range([0, plotW]);
+
+const yScaleNN = scaleLinear()
+              .domain([0, 29])
               .range([0, plotH]);
 
 const clusterColors = {
@@ -42,11 +51,15 @@ class Scatter extends Component {
     this.state = {
       unitMarker: zoomIdentity,
       canvasMarker: zoomIdentity,
+      nn: null,
+      highlightIdxs: null,
+      clusterIdxs: null
     };
 
     this.drawSVG = this.drawSVG.bind(this);
     this.drawScatter = this.drawScatter.bind(this);
     this.moveScatter = this.moveScatter.bind(this);
+    this.handleNN = this.handleNN.bind(this);
     this.drawHighlight = this.drawHighlight.bind(this);
     this.removeHighlight = this.removeHighlight.bind(this);
     this.moveHighlight = this.moveHighlight.bind(this);
@@ -63,6 +76,14 @@ class Scatter extends Component {
 
   componentDidMount() {
     this.drawSVG();
+
+    //fetch('http://localhost:8888/nn/1249_4_rr.json')
+    fetch('nn/1249_4_rr.json')
+      .then(response => response.json())
+      .then(data => this.setState({
+        nn: data
+      }));
+
   }
 
   // Probably not how you're supposed to use this function, but it works ---
@@ -83,6 +104,12 @@ class Scatter extends Component {
     }
 
     if (prevProps.data !== null && prevProps.data !== this.props.data && this.props.cluster === true) {
+      this.moveCluster();
+    }
+
+    if (prevState.nn !== null && prevState.nn !== this.state.nn ) {
+      this.moveScatter();
+      this.moveHighlight();
       this.moveCluster();
     }
 
@@ -196,22 +223,37 @@ class Scatter extends Component {
 
     } else if (this.props.zoom === 'canvas') {
 
+      let data = '';
+      let xScale = '';
+      let yScale = '';
+
+      if ( this.props.nnToggle===false ) {
+        xScale = xScaleScatter;
+        yScale = yScaleScatter;
+        data = this.props.data;
+      } else if ( this.props.nnToggle===true ) {
+        xScale = xScaleNN;
+        yScale = yScaleNN;
+        data = this.state.nn;
+      }
+
       // here we use margin-unadjusted transform, because we are not actually
       // applying a transform to the node itself
       this.updatedxScale = e.transform.rescaleX(xScale);
       this.updatedyScale = e.transform.rescaleY(yScale);
 
       // needed for moving the correct highlights
-      const highlighted = this.props.data.filter(d => d[this.props.selectionProp] === this.props.selection);
+      const highlighted = data.filter(d => d.fullname === this.state.highlightIdxs);
 
       // rescale x and y domains (above) then apply to all visible elements below
       select(svgNode)
         .select('g.plotCanvas')
         .selectAll('image')
-        .data(this.props.data)
+        .data(data)
         .attr('x', d => this.updatedxScale(d.x) )
         .attr('y', d => this.updatedyScale(d.y) )
 
+      // empty selection if no highlights exist
       select(svgNode)
         .select('g.plotCanvas')
         .selectAll('rect.highlight')
@@ -222,7 +264,7 @@ class Scatter extends Component {
       select(svgNode)
         .select('g.plotCanvas')
         .selectAll('rect.cluster')
-        .data(this.props.data)
+        .data(data)
         .attr('x', d => this.updatedxScale(d.x) )
         .attr('y', d => this.updatedyScale(d.y) )
     }
@@ -230,6 +272,20 @@ class Scatter extends Component {
 
   drawScatter() {
     const svgNode = this.svgNode.current;
+
+    let data = '';
+    let xScale = '';
+    let yScale = '';
+
+    if ( this.props.nnToggle===false ) {
+      xScale = xScaleScatter;
+      yScale = yScaleScatter;
+      data = this.props.data;
+    } else if ( this.props.nnToggle===true ) {
+      xScale = xScaleNN;
+      yScale = yScaleNN;
+      data = this.state.nn;
+    }
 
     // This selection is non-empty only the first time
     select(svgNode)
@@ -239,22 +295,46 @@ class Scatter extends Component {
       .enter()
       .append('image')
       .attr('id', d => 't' + d.fullname + '_textureImage')
+      //.attr('xlink:href', d => "http://localhost:8888/" + d[this.props.icon] )
       .attr('xlink:href', d => d[this.props.icon] )
       .attr('width', squareSide )
       .attr('height', squareSide )
-      .attr('x', d => xScale(d.x) )
-      .attr('y', d => yScale(d.y) )
       .on('mouseover', this.handleMouseover)
       .on('mouseout', this.handleMouseout)
+      .on('click', this.handleNN)
 
     select(svgNode)
       .select('g.plotCanvas')
       .selectAll('image')
+      .data(data)
+      .attr('x', d => xScale(d.x) )
+      .attr('y', d => yScale(d.y) )
+
+    // does nothing unless 'icon' has changed
+    select(svgNode)
+      .select('g.plotCanvas')
+      .selectAll('image')
       .data(this.props.data)
+      //.attr('xlink:href', d => "http://localhost:8888/" + d[this.props.icon] )
       .attr('xlink:href', d => d[this.props.icon] )
     }
 
   moveScatter() {
+
+    let data = '';
+    let xScale = '';
+    let yScale = '';
+
+    if ( this.props.nnToggle===false ) {
+      xScale = xScaleScatter;
+      yScale = yScaleScatter;
+      data = this.props.data;
+    } else if ( this.props.nnToggle===true ) {
+      xScale = xScaleNN;
+      yScale = yScaleNN;
+      data = this.state.nn;
+    }
+
     const svgNode = this.svgNode.current;
     const transitionSettings = transition().duration(this.props.tduration)
 
@@ -277,15 +357,34 @@ class Scatter extends Component {
     select(svgNode)
       .select('g.plotCanvas')
       .selectAll('image')
-      .data(this.props.data)
+      .data(data)
       .transition(transitionSettings)
         .attr('x', d => this.updatedxScale(d.x) )
         .attr('y', d => this.updatedyScale(d.y) )
   }
 
+  handleNN(e, d) {
+
+    console.log(d);
+
+    // if you click on an image when nn mode is off, nothing happens
+    if ( this.props.nnToggle===true ) {
+
+      //fetch('http://localhost:8888/nn/' + d.fullname + '.json')
+      fetch('nn/' + d.fullname + '.json')
+        .then(response => response.json())
+        .then(data => this.setState({ nn: data }))
+
+    }
+  }
+
   drawHighlight() {
     const svgNode = this.svgNode.current;
     const highlighted = this.props.data.filter(d => d[this.props.selectionProp] === this.props.selection);
+    const highlightIdxs = highlighted.map(d => d.fullname);
+
+    // available for filtering nn by highlight
+    this.setState({ highlightIdxs:  highlightIdxs});
 
     /*
     This way of setting the 'x' and 'y' attributes of highlights gets around the
@@ -295,6 +394,9 @@ class Scatter extends Component {
     to the x and y the highlight WOULD have had, had you not canvas zoomed. So
     we grab the CURRENT x and y of the texture image, which is there from the
     start and never exits, so it always gets moved by the canvas zoom.
+
+    By the way, this also helps with NN mode: the highlights will just follow
+    the texture images!
     */
 
     select(svgNode)
@@ -312,6 +414,7 @@ class Scatter extends Component {
       .attr('fill', 'rgba(255, 128, 0, 0.5)')
       .on('mouseover', this.handleMouseover)
       .on('mouseout', this.handleMouseout)
+      .on('click', this.handleNN)
 
     // this update selection is non-empty any time we change the
     // highlight selection, so we need to reset ids and positions
@@ -340,12 +443,33 @@ class Scatter extends Component {
       .select('g.plotCanvas')
       .selectAll('rect.highlight')
       .remove()
+
+    this.setState({ highlightIdxs:  null });
   }
 
   moveHighlight() {
+
+    let data = '';
+    let xScale = '';
+    let yScale = '';
+
+    if ( this.props.nnToggle===false ) {
+      xScale = xScaleScatter;
+      yScale = yScaleScatter;
+      data = this.props.data;
+    } else if ( this.props.nnToggle===true ) {
+      xScale = xScaleNN;
+      yScale = yScaleNN;
+      data = this.state.nn;
+    }
+
     const svgNode = this.svgNode.current;
     const transitionSettings = transition().duration(this.props.tduration);
-    const highlighted = this.props.data.filter(d => d[this.props.selectionProp] === this.props.selection);
+
+    let highlighted = [];
+    if ( this.state.highlightIdxs !== null ) {
+      highlighted = data.filter(d => this.state.highlightIdxs.includes(d.fullname))
+    }
 
     if (this.props.zoom === 'unit') {
 
@@ -375,6 +499,10 @@ class Scatter extends Component {
 
     // we only accept cluster labels between 0 and 6
     const clustered = this.props.clusterFillData.filter(d => ( d[this.props.clusterFillCol]) > -1 && d[this.props.clusterFillCol] < 7 );
+    const clusterIdxs = clustered.map(d => d.fullname);
+
+    // available for filtering nn by cluster
+    this.setState({ clusterIdxs:  clusterIdxs});
 
     select(svgNode)
       .select('g.plotCanvas')
@@ -391,6 +519,7 @@ class Scatter extends Component {
       .attr('fill', d => clusterColors[d[this.props.clusterFillCol]])
       .on('mouseover', this.handleMouseover)
       .on('mouseout', this.handleMouseout)
+      .on('click', this.handleNN)
 
     // this update selection is non-empty any time we change
     // clusterCol, so we need to reset ids, positions, and colors
@@ -421,9 +550,26 @@ class Scatter extends Component {
       .select('g.plotCanvas')
       .selectAll('rect.cluster')
       .remove()
+
+    this.setState({ clusterIdxs:  null });
   }
 
   moveCluster() {
+
+    let data = '';
+    let xScale = '';
+    let yScale = '';
+
+    if ( this.props.nnToggle===false ) {
+      xScale = xScaleScatter;
+      yScale = yScaleScatter;
+      data = this.props.data;
+    } else if ( this.props.nnToggle===true ) {
+      xScale = xScaleNN;
+      yScale = yScaleNN;
+      data = this.state.nn;
+    }
+
     const svgNode = this.svgNode.current;
     const transitionSettings = transition().duration(this.props.tduration);
 
@@ -441,7 +587,11 @@ class Scatter extends Component {
 
     // Here, we don't use clusterFillData because we need the x and y coords from
     // the new data file
-    const clustered = this.props.data.filter(d => ( d[this.props.clusterCol]) > -1 && d[this.props.clusterCol] < 7 );
+
+    let clustered = [];
+    if ( this.state.clusterIdxs !== null ) {
+      clustered = data.filter(d => this.state.clusterIdxs.includes(d.fullname))
+    }
 
     select(svgNode)
       .select('g.plotCanvas')
@@ -454,6 +604,7 @@ class Scatter extends Component {
 
   // note: 'e' here is the mouse event itself, which we don't need
   handleMouseover(e, d) {
+
     const svgPanel = this.svgPanel.current;
 
     select('#t' + d.fullname + '_textureImage')
@@ -476,10 +627,13 @@ class Scatter extends Component {
       .attr('id', 't' + d.fullname)
       .text(d.fullname)
 
+    const dataPoint = this.props.data.filter(item => item.fullname === d.fullname)
+
     select(svgPanel)
       .select('g.panelCanvas')
       .append('image')
-      .attr('xlink:href', d.texturepath)
+      //.attr('xlink:href', "http://localhost:8888/" + dataPoint[0].texturepath)
+      .attr('xlink:href', dataPoint[0].texturepath)
       .attr('width', 158 )
       .attr('height', 132 )
       .attr('x', 0 )
@@ -489,7 +643,8 @@ class Scatter extends Component {
     select(svgPanel)
       .select('g.panelCanvas')
       .append('image')
-      .attr('xlink:href', d.printpath)
+      //.attr('xlink:href', "http://localhost:8888/" + dataPoint[0].printpath)
+      .attr('xlink:href', dataPoint[0].printpath)
       .attr('width', 158 )
       .attr('height', 132 )
       .attr('x', 0 )
@@ -502,7 +657,7 @@ class Scatter extends Component {
       .attr('x', 0 )
       .attr('y', 400 )
       .attr('id', 't' + d.fullname + '_title')
-      .text(d.title)
+      .text(dataPoint[0].title)
 
     select(svgPanel)
       .select('g.panelCanvas')
@@ -510,7 +665,7 @@ class Scatter extends Component {
       .attr('x', 0 )
       .attr('y', 425 )
       .attr('id', 't' + d.fullname + '_year')
-      .text(d.year)
+      .text(dataPoint[0].year)
 
     select(svgPanel)
       .select('g.panelCanvas')
@@ -518,7 +673,7 @@ class Scatter extends Component {
       .attr('x', 0 )
       .attr('y', 480 )
       .attr('id', 't' + d.fullname + '_support')
-      .text(d.support)
+      .text(dataPoint[0].support)
 
     select(svgPanel)
       .select('g.panelCanvas')
@@ -526,7 +681,7 @@ class Scatter extends Component {
       .attr('x', 0 )
       .attr('y', 505 )
       .attr('id', 't' + d.fullname + '_dims')
-      .text(d.dims)
+      .text(dataPoint[0].dims)
 
     select(svgPanel)
       .select('g.panelCanvas')
@@ -534,11 +689,12 @@ class Scatter extends Component {
       .attr('x', 0 )
       .attr('y', 560 )
       .attr('id', 't' + d.fullname + '_edition')
-      .text('Edition: '+d.edition)
+      .text('Edition: '+ dataPoint[0].edition)
 
     }
 
   handleMouseout(e, d) {
+
       select('#t' + d.fullname + '_textureImage')
         .attr('width', squareSide )
         .attr('height', squareSide )
@@ -559,6 +715,7 @@ class Scatter extends Component {
       select('#t' + d.fullname + '_edition').remove()
       select('#t' + d.fullname + '_it').remove()
       select('#t' + d.fullname + '_ip').remove()
+
     }
 
   render() {

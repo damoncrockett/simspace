@@ -613,7 +613,8 @@ class Scatter extends Component {
     const transitionSettings = transition().duration(500)
 
     // we only accept cluster labels between 0 and 6
-    const clustered = this.props.clusterFillData.filter(d => ( d[this.props.clusterFillCol]) > -1 && d[this.props.clusterFillCol] < 7 );
+    //const clustered = this.props.clusterFillData.filter(d => ( d[this.props.clusterFillCol]) > -1 && d[this.props.clusterFillCol] < 7 );
+    const clustered = this.props.data.filter(d => ( d[this.props.clusterCol]) > -1 && d[this.props.clusterCol] < 7 );
     const clusterIdxs = clustered.map(d => d.fullname);
 
     // available for filtering nn by cluster
@@ -631,7 +632,7 @@ class Scatter extends Component {
       .attr('height', squareSide )
       .attr('x', d => select('#t' + d.fullname + '_textureImage').attr('x'))
       .attr('y', d => select('#t' + d.fullname + '_textureImage').attr('y'))
-      .attr('fill', d => clusterColors[d[this.props.clusterFillCol]])
+      .attr('fill', d => clusterColors[d[this.props.clusterCol]])
       .on('mouseover', this.handleMouseover)
       .on('mouseout', this.handleMouseout)
       .on('click', this.handleNN)
@@ -646,7 +647,7 @@ class Scatter extends Component {
       .attr('x', d => select('#t' + d.fullname + '_textureImage').attr('x'))
       .attr('y', d => select('#t' + d.fullname + '_textureImage').attr('y'))
       .transition(transitionSettings)
-        .attr('fill', d => clusterColors[d[this.props.clusterFillCol]])
+        .attr('fill', d => clusterColors[d[this.props.clusterCol]])
 
     // even though we have a remove cluster function below, we still need
     // this exit selection for changes in clusterCol

@@ -13,7 +13,7 @@ class App extends Component {
       umap: false,
       data: null,
       nnToggle: false,
-      clusterFillData: null,
+      //clusterFillData: null,
       leaves: [''],
       editions: [''],
       years: [''],
@@ -37,6 +37,7 @@ class App extends Component {
       dr: 'tsne',
       sp: true,
       pasfa: false,
+      amrhwt: false,
       model: 'sp',
       tduration: 5000,
       highlight: false,
@@ -45,7 +46,7 @@ class App extends Component {
       clusterMethod: 'kmeans',
       clusterNum: '4',
       clusterCol: 'sp_kmeans_4',
-      clusterFillCol: 'sp_kmeans_3__sp_kmeans_4',
+      //clusterFillCol: 'sp_kmeans_3__sp_kmeans_4',
       selection: '1249_4',
       selectionProp: 'leaf',
       unitzoom: true,
@@ -58,13 +59,14 @@ class App extends Component {
 
     this.getData = this.getData.bind(this);
     this.getNewCoords = this.getNewCoords.bind(this);
-    this.getClusterFillData = this.getClusterFillData.bind(this);
+    //this.getClusterFillData = this.getClusterFillData.bind(this);
     this.handlePCA = this.handlePCA.bind(this);
     this.handleTSNE = this.handleTSNE.bind(this);
     this.handleUMAP = this.handleUMAP.bind(this);
     this.handleNN = this.handleNN.bind(this);
     this.handleSP = this.handleSP.bind(this);
     this.handlePASFA = this.handlePASFA.bind(this);
+    this.handleAMRHWT = this.handleAMRHWT.bind(this);
     this.handleHighlight = this.handleHighlight.bind(this);
     this.handleCluster = this.handleCluster.bind(this);
     this.handleClusterModel = this.handleClusterModel.bind(this);
@@ -116,6 +118,7 @@ class App extends Component {
       }));
     }
 
+/*
   getClusterFillData() {
     //fetch('http://localhost:8888/__clusterfills.json')
     fetch('__clusterfills.json')
@@ -124,6 +127,7 @@ class App extends Component {
         clusterFillData: data
       }));
     }
+*/
 
   handlePCA() {
     this.setState({ pca: true, tsne: false, umap: false, dr: 'pca', nnToggle: false });
@@ -143,11 +147,15 @@ class App extends Component {
   }
 
   handleSP() {
-    this.setState({ sp: true, pasfa: false, model: 'sp' });
+    this.setState({ sp: true, pasfa: false, amrhwt: false, model: 'sp' });
   }
 
   handlePASFA() {
-    this.setState({ sp: false, pasfa: true, model: 'pasfa' });
+    this.setState({ sp: false, pasfa: true, amrhwt: false, model: 'pasfa' });
+  }
+
+  handleAMRHWT() {
+    this.setState({ sp: false, pasfa: false, amrhwt: true, model: 'amrhwt' });
   }
 
   handleTextureImage() {
@@ -177,7 +185,7 @@ class App extends Component {
     this.setState(state => ({
       clusterModel: clusterModel,
       clusterCol: clusterModel + '_' + this.state.clusterMethod + '_' + this.state.clusterNum,
-      clusterFillCol: this.state.clusterFillCol.split('__')[1] + '__' + clusterModel + '_' + this.state.clusterMethod + '_' + this.state.clusterNum
+      //clusterFillCol: this.state.clusterFillCol.split('__')[1] + '__' + clusterModel + '_' + this.state.clusterMethod + '_' + this.state.clusterNum
     }));
   }
 
@@ -186,7 +194,7 @@ class App extends Component {
     this.setState(state => ({
       clusterMethod: clusterMethod,
       clusterCol: this.state.clusterModel + '_' + clusterMethod + '_' + this.state.clusterNum,
-      clusterFillCol: this.state.clusterFillCol.split('__')[1] + '__' + this.state.clusterModel + '_' + clusterMethod + '_' + this.state.clusterNum
+      //clusterFillCol: this.state.clusterFillCol.split('__')[1] + '__' + this.state.clusterModel + '_' + clusterMethod + '_' + this.state.clusterNum
     }));
   }
 
@@ -195,7 +203,7 @@ class App extends Component {
     this.setState(state => ({
       clusterNum: clusterNum,
       clusterCol: this.state.clusterModel + '_' + this.state.clusterMethod + '_' + clusterNum,
-      clusterFillCol: this.state.clusterFillCol.split('__')[1] + '__' + this.state.clusterModel + '_' + this.state.clusterMethod + '_' + clusterNum
+      //clusterFillCol: this.state.clusterFillCol.split('__')[1] + '__' + this.state.clusterModel + '_' + this.state.clusterMethod + '_' + clusterNum
     }));
   }
 
@@ -264,7 +272,7 @@ class App extends Component {
 
   componentDidMount() {
     this.getData();
-    this.getClusterFillData();
+    //this.getClusterFillData();
   }
 
   componentDidUpdate(prevProps, prevState) {
@@ -320,6 +328,11 @@ class App extends Component {
     const pasfaStyle = {
       backgroundColor: this.state.pasfa ? 'white' : bkgd,
       color: this.state.pasfa ? 'black' : stroke
+    };
+
+    const amrhwtStyle = {
+      backgroundColor: this.state.amrhwt ? 'white' : bkgd,
+      color: this.state.amrhwt ? 'black' : stroke
     };
 
     const textureStyle = {
@@ -396,14 +409,14 @@ class App extends Component {
           <Scatter
             data={this.state.data}
             nnToggle={this.state.nnToggle}
-            clusterFillData={this.state.clusterFillData}
+            //clusterFillData={this.state.clusterFillData}
             tduration={this.state.tduration}
             highlight={this.state.highlight}
             selection={this.state.selection}
             selectionProp={this.state.selectionProp}
             cluster={this.state.cluster}
             clusterCol={this.state.clusterCol}
-            clusterFillCol={this.state.clusterFillCol}
+            //clusterFillCol={this.state.clusterFillCol}
             zoom={this.state.zoom}
             icon={this.state.icon}
             model={this.state.model}
@@ -445,6 +458,7 @@ class App extends Component {
             <select style={selectStyle} value={this.state.clusterModel} onChange={this.handleClusterModel}>
               <option value='sp'>SP</option>
               <option value='pasfa'>PASFA</option>
+              <option value='amrhwt'>AMRHWT</option>
             </select>
             <select style={selectStyle} value={this.state.clusterMethod} onChange={this.handleClusterMethod}>
               <option value='kmeans'>k-means</option>
@@ -485,6 +499,7 @@ class App extends Component {
           <div className='buttonStrip'>
             <button onClick={this.handleSP} style={spStyle}>SP</button>
             <button onClick={this.handlePASFA} style={pasfaStyle}>PASFA</button>
+            <button onClick={this.handleAMRHWT} style={amrhwtStyle}>AMRHWT</button>
           </div>
         </div>
       </div>

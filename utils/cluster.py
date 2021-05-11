@@ -6,14 +6,13 @@ HOMEDIR = os.path.expanduser("~")
 
 '''
 If you want to use ivpy's sklearn wrappers here,
-clone https://github.com/damoncrockett/ivpy. I use a 'test' version on my home
-machine most of the time, which is why I use the path below. In any case, until
+clone https://github.com/damoncrockett/ivpy. Until
 ivpy is bundled into a pip-installable package, you can use it by adding the
 directory to your system path.
 '''
 
 import sys
-sys.path.append(HOMEDIR + '/ivpytest/src')
+sys.path.append(HOMEDIR + '/ivpy/src')
 from ivpy.cluster import cluster
 
 import warnings
@@ -21,9 +20,10 @@ warnings.filterwarnings('ignore')
 
 sp = pd.read_csv(HOMEDIR + '/simspace/src/assets/csv/sp.csv')
 pasfa = pd.read_csv(HOMEDIR + '/simspace/src/assets/csv/pasfa.csv')
+amrhwt = pd.read_csv(HOMEDIR + '/simspace/src/assets/csv/amrhwt.csv')
 
-# currently, there are 36 cluster models, but can be any number
-models = ['sp','pasfa']
+# currently, there are 54 cluster models, but can be any number
+models = ['sp','pasfa','amrhwt']
 methods = ['kmeans','hierarchical','spectral']
 nums = [2,3,4,5,6,7]
 
@@ -36,6 +36,8 @@ for model in models:
                 tmp = cluster(sp,method=method,k=num)
             elif model=='pasfa':
                 tmp = cluster(pasfa,method=method,k=num)
+            elif model=='amrhwt':
+                tmp = cluster(amrhwt,method=method,k=num)
             cf[model+'_'+method+'_'+str(num)] = tmp
 
 cf.to_csv(HOMEDIR + '/simspace/src/assets/csv/cluster.csv', index=False)

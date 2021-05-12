@@ -753,7 +753,7 @@ class Scatter extends Component {
       .attr('width', 158 )
       .attr('height', 132 )
       .attr('x', 0 )
-      .attr('y', 25)
+      .attr('y', 20)
       .attr('id', 't' + d.fullname + '_it')
 
     select(svgPanel)
@@ -763,15 +763,15 @@ class Scatter extends Component {
       .attr('xlink:href', dataPoint[0].printpath)
       .attr('width', 158 )
       .attr('height', 132 )
-      .attr('x', 0 )
-      .attr('y', 215)
+      .attr('x', 160 )
+      .attr('y', 20)
       .attr('id', 't' + d.fullname + '_ip')
 
     select(svgPanel)
       .select('g.panelCanvas')
       .append('text')
       .attr('x', 0 )
-      .attr('y', 400 )
+      .attr('y', 175 )
       .attr('id', 't' + d.fullname + '_title')
       .text(dataPoint[0].title)
 
@@ -779,33 +779,37 @@ class Scatter extends Component {
       .select('g.panelCanvas')
       .append('text')
       .attr('x', 0 )
-      .attr('y', 425 )
+      .attr('y', 190 )
       .attr('id', 't' + d.fullname + '_year')
       .text(dataPoint[0].year)
 
+/*
     select(svgPanel)
       .select('g.panelCanvas')
       .append('text')
       .attr('x', 0 )
-      .attr('y', 480 )
+      .attr('y', 230 )
       .attr('id', 't' + d.fullname + '_support')
       .text(dataPoint[0].support)
 
-    select(svgPanel)
-      .select('g.panelCanvas')
-      .append('text')
-      .attr('x', 0 )
-      .attr('y', 505 )
-      .attr('id', 't' + d.fullname + '_dims')
-      .text(dataPoint[0].dims)
 
     select(svgPanel)
       .select('g.panelCanvas')
       .append('text')
       .attr('x', 0 )
-      .attr('y', 560 )
+      .attr('y', 215 )
+      .attr('id', 't' + d.fullname + '_dims')
+      .text(dataPoint[0].dims)
+
+
+    select(svgPanel)
+      .select('g.panelCanvas')
+      .append('text')
+      .attr('x', 0 )
+      .attr('y', 15 )
       .attr('id', 't' + d.fullname + '_edition')
       .text('Edition: '+ dataPoint[0].edition)
+*/
 
     }
 
@@ -826,9 +830,9 @@ class Scatter extends Component {
       select('#t' + d.fullname ).remove()
       select('#t' + d.fullname + '_title').remove()
       select('#t' + d.fullname + '_year').remove()
-      select('#t' + d.fullname + '_support').remove()
-      select('#t' + d.fullname + '_dims').remove()
-      select('#t' + d.fullname + '_edition').remove()
+      //select('#t' + d.fullname + '_support').remove()
+      //select('#t' + d.fullname + '_dims').remove()
+      //select('#t' + d.fullname + '_edition').remove()
       select('#t' + d.fullname + '_it').remove()
       select('#t' + d.fullname + '_ip').remove()
 
@@ -847,8 +851,8 @@ class Scatter extends Component {
         <div className='fieldPanel'>
           <svg
           ref={this.svgPanel}
-          width={svgW/2}
-          height={svgH/2}
+          width={375}
+          height={240}
           />
         </div>
       </div>

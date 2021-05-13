@@ -38,6 +38,7 @@ class App extends Component {
       sp: true,
       pasfa: false,
       amrhwt: false,
+      ctnn: false,
       model: 'sp',
       tduration: 5000,
       highlight: false,
@@ -67,6 +68,7 @@ class App extends Component {
     this.handleSP = this.handleSP.bind(this);
     this.handlePASFA = this.handlePASFA.bind(this);
     this.handleAMRHWT = this.handleAMRHWT.bind(this);
+    this.handleCTNN = this.handleCTNN.bind(this);
     this.handleHighlight = this.handleHighlight.bind(this);
     this.handleCluster = this.handleCluster.bind(this);
     this.handleClusterModel = this.handleClusterModel.bind(this);
@@ -147,15 +149,19 @@ class App extends Component {
   }
 
   handleSP() {
-    this.setState({ sp: true, pasfa: false, amrhwt: false, model: 'sp' });
+    this.setState({ sp: true, pasfa: false, amrhwt: false, ctnn: false, model: 'sp' });
   }
 
   handlePASFA() {
-    this.setState({ sp: false, pasfa: true, amrhwt: false, model: 'pasfa' });
+    this.setState({ sp: false, pasfa: true, amrhwt: false, ctnn: false, model: 'pasfa' });
   }
 
   handleAMRHWT() {
-    this.setState({ sp: false, pasfa: false, amrhwt: true, model: 'amrhwt' });
+    this.setState({ sp: false, pasfa: false, amrhwt: true, ctnn: false, model: 'amrhwt' });
+  }
+
+  handleCTNN() {
+    this.setState({ sp: false, pasfa: false, amrhwt: false, ctnn: true, model: 'ctnn' });
   }
 
   handleTextureImage() {
@@ -335,6 +341,11 @@ class App extends Component {
       color: this.state.amrhwt ? 'black' : stroke
     };
 
+    const ctnnStyle = {
+      backgroundColor: this.state.ctnn ? 'white' : bkgd,
+      color: this.state.ctnn ? 'black' : stroke
+    };
+
     const textureStyle = {
       backgroundColor: this.state.texture ? 'white' : bkgd,
       color: this.state.texture ? 'black' : stroke
@@ -459,6 +470,7 @@ class App extends Component {
               <option value='sp'>SP</option>
               <option value='pasfa'>PASFA</option>
               <option value='amrhwt'>AMRHWT</option>
+              <option value='ctnn'>CTNN</option>
             </select>
             <select style={selectStyle} value={this.state.clusterMethod} onChange={this.handleClusterMethod}>
               <option value='kmeans'>k-means</option>
@@ -500,6 +512,7 @@ class App extends Component {
             <button onClick={this.handleSP} style={spStyle}>SP</button>
             <button onClick={this.handlePASFA} style={pasfaStyle}>PASFA</button>
             <button onClick={this.handleAMRHWT} style={amrhwtStyle}>AMRHWT</button>
+            <button onClick={this.handleCTNN} style={ctnnStyle}>CTNN</button>
           </div>
         </div>
       </div>

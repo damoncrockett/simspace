@@ -27,11 +27,11 @@ const yScaleScatter = scaleLinear()
 
 // this uses the max grid coord values
 const xScaleNN = scaleLinear()
-              .domain([0, 29])
+              .domain([0, 36])
               .range([0, plotW]);
 
 const yScaleNN = scaleLinear()
-              .domain([0, 29])
+              .domain([0, 36])
               .range([0, plotH]);
 
 const clusterColors = {
@@ -305,8 +305,8 @@ class Scatter extends Component {
       select(svgNode)
         .select('g.plotCanvas')
         .selectAll('rect.target')
-        .attr('x', this.updatedxScale(15) )
-        .attr('y', this.updatedyScale(15) )
+        .attr('x', this.updatedxScale(20) )
+        .attr('y', this.updatedyScale(20) )
 
     }
   }
@@ -475,8 +475,8 @@ class Scatter extends Component {
       .attr('id', 'NNtarget')
       .attr('width', squareSide )
       .attr('height', squareSide )
-      .attr('x', this.updatedxScale(15) )
-      .attr('y', this.updatedyScale(15) )
+      .attr('x', this.updatedxScale(20) )
+      .attr('y', this.updatedyScale(20) )
       .attr('stroke', 'magenta')
       .attr('stroke-width', 4)
       .attr('fill', 'none')

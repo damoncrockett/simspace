@@ -21,9 +21,10 @@ warnings.filterwarnings('ignore')
 sp = pd.read_csv(HOMEDIR + '/simspace/src/assets/csv/sp.csv')
 pasfa = pd.read_csv(HOMEDIR + '/simspace/src/assets/csv/pasfa.csv')
 amrhwt = pd.read_csv(HOMEDIR + '/simspace/src/assets/csv/amrhwt.csv')
+ctnn = pd.read_csv(HOMEDIR + '/simspace/src/assets/csv/ctnn.csv')
 
 # currently, there are 54 cluster models, but can be any number
-models = ['sp','pasfa','amrhwt']
+models = ['sp','pasfa','amrhwt','ctnn']
 methods = ['kmeans','hierarchical','spectral']
 nums = [2,3,4,5,6,7]
 
@@ -38,6 +39,8 @@ for model in models:
                 tmp = cluster(pasfa,method=method,k=num)
             elif model=='amrhwt':
                 tmp = cluster(amrhwt,method=method,k=num)
+            elif model=='ctnn':
+                tmp = cluster(ctnn,method=method,k=num)
             cf[model+'_'+method+'_'+str(num)] = tmp
 
 cf.to_csv(HOMEDIR + '/simspace/src/assets/csv/cluster.csv', index=False)

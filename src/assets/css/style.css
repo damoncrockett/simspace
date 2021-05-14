@@ -39,7 +39,7 @@ g {
 	border-style: solid;
 }
 
-.highlightPanel, .clusterPanel, .zoomPanel, .iconPanel, .modelPanel, .drPanel {
+.highlightPanel, .clusterPanel, .zoomPanel, .iconPanel, .modelPanel, .drPanel, .miscPanel {
   float: left;
   margin-top: 10px;
   margin-left: 10px;

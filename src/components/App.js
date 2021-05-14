@@ -41,6 +41,7 @@ class App extends Component {
       ctnn: false,
       model: 'sp',
       tduration: 5000,
+      transition: true,
       highlight: false,
       cluster: false,
       clusterModel: 'sp',
@@ -80,6 +81,7 @@ class App extends Component {
     this.handleCanvasZoom = this.handleCanvasZoom.bind(this);
     this.handleTextureImage = this.handleTextureImage.bind(this);
     this.handlePrintImage = this.handlePrintImage.bind(this);
+    this.handleTransition = this.handleTransition.bind(this);
   }
 
   getData() {
@@ -170,6 +172,18 @@ class App extends Component {
 
   handlePrintImage() {
     this.setState({ texture: false, print: true, icon: 'printpath' });
+  }
+
+  handleTransition() {
+    this.setState(state => ({
+      transition: !this.state.transition
+    }), function() {
+      if ( this.state.transition === true ) {
+        this.setState({ tduration: 5000 });
+      } else if ( this.state.transition === false ) {
+        this.setState({ tduration: 0 });
+      }
+    });
   }
 
   // need functional setState here because new state depends on old
@@ -371,6 +385,11 @@ class App extends Component {
       color: stroke
     };
 
+    const transitionStyle = {
+      backgroundColor: this.state.transition ? 'white' : bkgd,
+      color: this.state.transition ? 'black' : stroke
+    };
+
     let selectionOptions = '';
     if (this.state.selectionProp === 'leaf') {
       selectionOptions = this.state.leaves
@@ -513,6 +532,11 @@ class App extends Component {
             <button onClick={this.handlePASFA} style={pasfaStyle}>PASFA</button>
             <button onClick={this.handleAMRHWT} style={amrhwtStyle}>AMRHWT</button>
             <button onClick={this.handleCTNN} style={ctnnStyle}>CTNN</button>
+          </div>
+        </div>
+        <div className='miscPanel'>
+          <div className='buttonStrip'>
+            <button onClick={this.handleTransition} style={transitionStyle}>TRANSITION</button>
           </div>
         </div>
       </div>
